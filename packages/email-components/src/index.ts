@@ -6,6 +6,7 @@
 export { EMAIL_COMPONENTS, listComponentTypes } from "./registry.js";
 export type { BlockCategory, EmailComponentDef } from "./registry.js";
 export { registerEmailComponents } from "./register.js";
+export { BRAND_DEFAULTS, EMAIL_COLORS } from "./brandDefaults.js";
 export {
   isAllowedImageUrl,
   isAllowedLinkUrl,

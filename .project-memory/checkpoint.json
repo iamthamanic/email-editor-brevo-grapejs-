@@ -1,6 +1,7 @@
 {
   "schema_version": 1,
-  "last_processed_commit": "b4687f9314b075feff26e050d1fadd6c151a1a38",
-  "processed_at": "2026-08-07T05:59:48Z",
-  "mode": "bootstrap"
+  "last_processed_commit": "c6d4572ccdce12c07bff09288b7861e5ea903371",
+  "processed_at": "2026-08-07T08:04:00Z",
+  "mode": "incremental",
+  "notes": "Phase 3 corporate components committed on main"
 }

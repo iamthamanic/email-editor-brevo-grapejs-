@@ -3,7 +3,7 @@
  * Location: packages/email-components/src/registry.ts
  */
 
-export type BlockCategory = "content" | "layout";
+export type BlockCategory = "content" | "layout" | "corporate";
 
 export interface EmailComponentDef {
   type: string;
@@ -52,6 +52,36 @@ export const EMAIL_COMPONENTS: readonly EmailComponentDef[] = [
     label: "3 Spalten",
     category: "layout",
     categoryLabel: "Layout",
+  },
+  {
+    type: "company-header",
+    label: "Header",
+    category: "corporate",
+    categoryLabel: "Firma",
+  },
+  {
+    type: "company-footer",
+    label: "Footer",
+    category: "corporate",
+    categoryLabel: "Firma",
+  },
+  {
+    type: "company-legal",
+    label: "Legal",
+    category: "corporate",
+    categoryLabel: "Firma",
+  },
+  {
+    type: "company-contact",
+    label: "Kontakt",
+    category: "corporate",
+    categoryLabel: "Firma",
+  },
+  {
+    type: "company-social",
+    label: "Social",
+    category: "corporate",
+    categoryLabel: "Firma",
   },
 ] as const;
 

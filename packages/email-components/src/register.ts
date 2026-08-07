@@ -5,6 +5,7 @@
  */
 
 import type { Component, Editor } from "grapesjs";
+import { registerCorporateComponents } from "./corporate.js";
 import { sanitizeEmailHtml } from "./html.js";
 import { EMAIL_COMPONENTS } from "./registry.js";
 import { escapeHtml, sanitizeAltText, toPlainText } from "./text.js";
@@ -391,6 +392,7 @@ export function registerEmailComponents(editor: Editor): void {
   }
 
   wireLinkGuards(editor);
+  registerCorporateComponents(editor);
 
   const bm = editor.BlockManager;
   bm.getAll().reset();

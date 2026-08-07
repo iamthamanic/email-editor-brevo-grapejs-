@@ -1,12 +1,10 @@
 # Features
 
-Alle Einträge sind **geplant** (PRD) — noch nicht implementiert.
-
-| ID | Titel | Status |
+| ID | Title | Status |
 |----|-------|--------|
-| foundation | Foundation | planned |
-| email-components | Email Components | planned |
-| corporate-components | Corporate Components | planned |
+| foundation | Foundation | implemented |
+| email-components | Email Components | implemented |
+| corporate-components | Corporate Components | implemented |
 | variables | Variables | planned |
 | brevo-publish | Brevo Publish | planned |
 | brevo-sync | Brevo Sync | planned |

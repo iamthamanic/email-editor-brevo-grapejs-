@@ -23,6 +23,28 @@ Standalone **Email Template Service** für ein ERP: visuelle Bearbeitung von Bre
 
 ---
 
+## ERP-Zielsystem (HVAI-123) — verbindliche Integrationsregeln
+
+Ziel-ERP: **[browo/HVAI-123](https://github.com/browo/HVAI-123)** (browo-ai-umbrella / Halteverbot123).
+
+### Push-Verbot (absolut)
+
+- **Niemals** nach `browo/HVAI-123` (oder dessen Submodule/Forks als Deploy-Ziel) **pushen**, force-pushen, PR mergen oder Remote-Branches anlegen — außer der User fordert das **explizit und schriftlich in derselben Nachricht**.
+- Default: Analyse und Integration **nur lesend** (Clone/Fetch/Browse OK); Änderungen entstehen **in diesem Email-Template-Repo** (oder einem vom User freigegebenen Integrations-Branch in einem **anderen** Repo).
+- Agents dürfen **keine** `git remote add`/`git push` gegen HVAI-123 ausführen und keine Secrets/Zertifikate aus jenem Repo committen.
+
+### Was HVAI-123 schon hat (Kontext für Integration)
+
+- Frontend: Vite + React + Ant Design / Tailwind, Modul `brevo_module` (Route `brevo`), Templates heute über **HtmlEditor** + Brevo REST (`/brevo/email/template_*`)
+- Backend: Express + Prisma + JWT (`localStorage` `auth_token`) + `Authorized_Works`
+- Microservices: `brevo_email_service` / `brevo_services` (Django) — Send + Template CRUD gegen Brevo
+- Authz: neue Endpoints müssen in `Authorized_Works` landen
+- Theme: Ant Design Tokens (`colorPrimary: #275073`, …) — nicht unsere `--erp-*` Fallbacks
+
+Änderungen an unserem Service müssen diese Grenzen respektieren (Adapter statt ERP-Schema-Kopplung).
+
+---
+
 ## Tech Stack (verbindlich)
 
 | Bereich | Technologie | Notiz |

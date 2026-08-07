@@ -1,9 +1,9 @@
 {
   "schema_version": 1,
-  "phase": "scaffold",
+  "phase": "phase-3",
   "summary": {
-    "de": "Projekt-Setup abgeschlossen: PRD, AGENTS, QA, Monorepo-Platzhalter. Apps (editor/api) noch nicht bootstrapped.",
-    "en": "Project setup complete: PRD, AGENTS, QA, monorepo placeholders. Apps (editor/api) not bootstrapped yet."
+    "de": "Phase 1–3 committed; Corporate Components (Firma) live. Variablen/Brevo/ERP-Auth noch offen.",
+    "en": "Phases 1–3 committed; Corporate Components (Company) live. Variables/Brevo/ERP auth still open."
   },
   "milestones": [
     {
@@ -13,8 +13,18 @@
     },
     {
       "id": "phase-1-foundation",
-      "title": { "de": "Phase 1 — Foundation (Vite/Fastify/Postgres)", "en": "Phase 1 — Foundation (Vite/Fastify/Postgres)" },
-      "status": "planned"
+      "title": { "de": "Phase 1 — Foundation", "en": "Phase 1 — Foundation" },
+      "status": "done"
+    },
+    {
+      "id": "phase-2-email-components",
+      "title": { "de": "Phase 2 — Email Components", "en": "Phase 2 — Email Components" },
+      "status": "done"
+    },
+    {
+      "id": "phase-3-corporate-components",
+      "title": { "de": "Phase 3 — Corporate Components", "en": "Phase 3 — Corporate Components" },
+      "status": "done"
     }
   ],
   "open_risks": [
@@ -24,5 +34,5 @@
     }
   ],
   "review_status": "needs-review",
-  "confidence": 0.75
+  "confidence": 0.88
 }

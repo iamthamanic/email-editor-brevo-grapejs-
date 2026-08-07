@@ -1,0 +1,53 @@
+{
+  "id": "2026-08-07-phase-3-corporate-components",
+  "date": "2026-08-07",
+  "type": "feat",
+  "status": "committed",
+  "title": {
+    "de": "Phase 3 — Corporate Components (Firma)",
+    "en": "Phase 3 — Corporate Components (Company)"
+  },
+  "summary": {
+    "de": "Fünf typisierte Firma-Blöcke mit locked Shell, Traits, Brand-Defaults und Nested-Lock nach Rebuild.",
+    "en": "Five typed company blocks with locked shell, traits, brand defaults, and nested lock after rebuild."
+  },
+  "user_impact": {
+    "de": ["Kategorie Firma im Block Manager", "Header/Footer/Legal/Kontakt/Social"],
+    "en": ["Company category in block manager", "Header/Footer/Legal/Contact/Social"]
+  },
+  "developer_impact": {
+    "de": ["packages/email-components corporate.ts + brandDefaults", "E2E phase-3"],
+    "en": ["packages/email-components corporate.ts + brandDefaults", "E2E phase-3"]
+  },
+  "operational_impact": {
+    "de": ["Keine API-/DB-Änderung"],
+    "en": ["No API/DB change"]
+  },
+  "git": {
+    "base": "c6d4572ccdce12c07bff09288b7861e5ea903371",
+    "head": "pending",
+    "branch": "main",
+    "pull_request": null
+  },
+  "packages": ["packages/email-components", "apps/editor"],
+  "affected_features": ["corporate-components", "email-components"],
+  "affected_components": [
+    "packages/email-components/src/corporate.ts",
+    "packages/email-components/src/brandDefaults.ts",
+    "packages/email-components/src/registry.ts",
+    "apps/editor/e2e/phase-3-corporate-components.spec.ts"
+  ],
+  "breaking_changes": [],
+  "migration_required": false,
+  "security_relevant": true,
+  "evidence": [
+    {
+      "type": "path",
+      "ref": ".qa/evidence/phase-3-corporate-components/",
+      "label": "Playwright screenshots"
+    }
+  ],
+  "review_status": "needs-review",
+  "confidence": 0.9,
+  "locked": false
+}

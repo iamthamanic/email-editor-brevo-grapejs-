@@ -1,16 +1,32 @@
 {
   "id": "corporate-components",
   "title": { "de": "Corporate Components", "en": "Corporate Components" },
-  "summary": { "de": "Header/Footer als Registry-Komponenten", "en": "Header/Footer as registry components" },
-  "status": "planned",
-  "packages": ["apps/editor", "apps/api"],
-  "paths": [],
-  "user_impact": {
-    "de": ["Noch nicht implementiert — geplant laut PRD"],
-    "en": ["Not implemented yet — planned per PRD"]
+  "summary": {
+    "de": "Firma-Blöcke Header/Footer/Legal/Kontakt/Social als locked GrapesJS-Typen",
+    "en": "Company blocks Header/Footer/Legal/Contact/Social as locked GrapesJS types"
   },
-  "related_changes": ["2026-08-07-project-setup-bootstrap"],
+  "status": "implemented",
+  "packages": ["packages/email-components", "apps/editor"],
+  "paths": [
+    "packages/email-components/src/corporate.ts",
+    "packages/email-components/src/brandDefaults.ts",
+    "packages/email-components/src/registry.ts"
+  ],
+  "user_impact": {
+    "de": [
+      "Block-Kategorie „Firma“ im Editor",
+      "Header/Footer/Legal/Kontakt/Social per Drag & Traits"
+    ],
+    "en": [
+      "Company block category in the editor",
+      "Header/Footer/Legal/Contact/Social via drag & traits"
+    ]
+  },
+  "related_changes": [
+    "2026-08-07-project-setup-bootstrap",
+    "2026-08-07-phase-3-corporate-components"
+  ],
   "review_status": "needs-review",
-  "confidence": 0.55,
+  "confidence": 0.88,
   "locked": false
 }
