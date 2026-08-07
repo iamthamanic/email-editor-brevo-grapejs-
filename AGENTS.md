@@ -50,7 +50,7 @@ email-template-service/
 ├── packages/
 │   ├── email-schema/
 │   ├── editor-core/
-│   ├── email-components/
+│   ├── email-components/ # GrapesJS block/component registry
 │   ├── brevo-adapter/   # einzige Brevo-Kommunikationsschicht
 │   ├── legacy-importer/
 │   ├── email-renderer/

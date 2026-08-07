@@ -4,7 +4,14 @@
  */
 
 import grapesjs, { type Editor, type EditorConfig } from "grapesjs";
+import {
+  registerEmailComponents,
+  sanitizeEmailHtml,
+} from "@email-template/email-components";
 import type { EditorProjectData } from "@email-template/email-schema";
+
+/** Re-export for future publish/renderer pipeline (F-02 HTML allowlist). */
+export { sanitizeEmailHtml };
 
 export interface CreateEditorOptions {
   container: HTMLElement;
@@ -20,12 +27,17 @@ export function createEmailEditor(options: CreateEditorOptions): Editor {
     fromElement: false,
     storageManager: false,
     noticeOnUnload: false,
+    // Stock blocks cleared in registerEmailComponents
+    blockManager: {
+      appendTo: undefined,
+    },
     canvas: {
       styles: [],
     },
   };
 
   const editor = grapesjs.init(config);
+  registerEmailComponents(editor);
 
   if (options.projectData && Object.keys(options.projectData).length > 0) {
     editor.loadProjectData(options.projectData);

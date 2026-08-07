@@ -14,6 +14,7 @@
   },
   "dependencies": {
     "@email-template/editor-core": "*",
+    "@email-template/email-components": "*",
     "@email-template/email-schema": "*",
     "@email-template/theme-contract": "*",
     "grapesjs": "^0.22.9",

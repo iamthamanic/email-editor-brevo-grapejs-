@@ -1,5 +1,5 @@
 {
-  "name": "@email-template/editor-core",
+  "name": "@email-template/email-components",
   "version": "0.0.0",
   "private": true,
   "type": "module",
@@ -9,17 +9,15 @@
     ".": "./src/index.ts"
   },
   "scripts": {
-    "typecheck": "tsc --noEmit"
-  },
-  "dependencies": {
-    "@email-template/email-components": "*",
-    "@email-template/email-schema": "*"
+    "typecheck": "tsc --noEmit",
+    "test": "tsx --test src/**/*.test.ts"
   },
   "peerDependencies": {
     "grapesjs": "^0.22.0"
   },
   "devDependencies": {
     "grapesjs": "^0.22.9",
+    "tsx": "^4.19.3",
     "typescript": "^5.8.2"
   }
 }
