@@ -1,0 +1,24 @@
+/**
+ * Theme Contract CSS custom properties for editor chrome.
+ * Location: packages/theme-contract — ERP may override via host injection later.
+ */
+:root {
+  --erp-font-family: "IBM Plex Sans", "Segoe UI", sans-serif;
+  --erp-font-size-base: 14px;
+
+  --erp-color-primary: #1a5f4a;
+  --erp-color-background: #eef2f0;
+  --erp-color-surface: #ffffff;
+  --erp-color-border: #c5d0cb;
+
+  --erp-color-text: #14201c;
+  --erp-color-text-muted: #5c6b66;
+
+  --erp-radius-small: 4px;
+  --erp-radius-medium: 8px;
+
+  --erp-spacing-xs: 4px;
+  --erp-spacing-sm: 8px;
+  --erp-spacing-md: 16px;
+  --erp-spacing-lg: 24px;
+}

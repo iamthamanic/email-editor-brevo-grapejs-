@@ -1,0 +1,28 @@
+{
+  "schema_version": 1,
+  "phase": "scaffold",
+  "summary": {
+    "de": "Projekt-Setup abgeschlossen: PRD, AGENTS, QA, Monorepo-Platzhalter. Apps (editor/api) noch nicht bootstrapped.",
+    "en": "Project setup complete: PRD, AGENTS, QA, monorepo placeholders. Apps (editor/api) not bootstrapped yet."
+  },
+  "milestones": [
+    {
+      "id": "project-setup",
+      "title": { "de": "Project Setup / Scaffold", "en": "Project Setup / Scaffold" },
+      "status": "done"
+    },
+    {
+      "id": "phase-1-foundation",
+      "title": { "de": "Phase 1 — Foundation (Vite/Fastify/Postgres)", "en": "Phase 1 — Foundation (Vite/Fastify/Postgres)" },
+      "status": "planned"
+    }
+  ],
+  "open_risks": [
+    {
+      "de": "ERP-Auth und Deployment noch offen",
+      "en": "ERP auth and deployment still TBD"
+    }
+  ],
+  "review_status": "needs-review",
+  "confidence": 0.75
+}

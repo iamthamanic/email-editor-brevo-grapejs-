@@ -1,0 +1,53 @@
+<!DOCTYPE html>
+<html lang="de">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <meta name="color-scheme" content="dark" />
+  <title>Project Memory</title>
+  <link rel="stylesheet" href="styles.css" />
+  <link id="theme-fonts" rel="stylesheet" href="" />
+  <script src="https://cdn.jsdelivr.net/npm/mermaid@10/dist/mermaid.min.js"></script>
+</head>
+<body>
+  <a class="skip-link" href="#main">Zum Inhalt</a>
+  <div class="shell">
+    <header class="top">
+      <div class="brand">
+        <p class="eyebrow" data-i18n="eyebrow">Projektgedächtnis</p>
+        <h1 id="project-title">Project Memory</h1>
+        <p id="project-summary" class="lede"></p>
+      </div>
+      <div class="controls">
+        <label class="lang">
+          <span data-i18n="lang">Sprache</span>
+          <select id="lang-select" name="lang" autocomplete="off" aria-label="Language">
+            <option value="de">DE</option>
+            <option value="en">EN</option>
+          </select>
+        </label>
+        <nav class="tabs" role="tablist" aria-label="Views">
+          <button type="button" class="tab is-active" data-view="status" role="tab" aria-selected="true">Status</button>
+          <button type="button" class="tab" data-view="features" role="tab" aria-selected="false">Features</button>
+          <button type="button" class="tab" data-view="changes" role="tab" aria-selected="false">Changes</button>
+          <button type="button" class="tab" data-view="decisions" role="tab" aria-selected="false">Decisions</button>
+          <button type="button" class="tab" data-view="architecture" role="tab" aria-selected="false" data-i18n-tab="architecture">Architecture</button>
+        </nav>
+      </div>
+    </header>
+
+    <main id="main">
+      <section id="view-status" class="view is-active" role="tabpanel"></section>
+      <section id="view-features" class="view" role="tabpanel" hidden></section>
+      <section id="view-changes" class="view" role="tabpanel" hidden></section>
+      <section id="view-decisions" class="view" role="tabpanel" hidden></section>
+      <section id="view-architecture" class="view" role="tabpanel" hidden></section>
+    </main>
+
+    <footer class="foot">
+      <p>memory-live-doc · data from <code>./data/*.json</code></p>
+    </footer>
+  </div>
+  <script src="app.js"></script>
+</body>
+</html>

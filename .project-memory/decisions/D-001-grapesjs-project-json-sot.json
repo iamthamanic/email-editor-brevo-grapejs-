@@ -1,0 +1,15 @@
+{
+  "id": "D-001-grapesjs-project-json-sot",
+  "date": "2026-08-07",
+  "title": {
+    "de": "GrapesJS Project JSON ist Editor-Source-of-Truth",
+    "en": "GrapesJS Project JSON is editor source of truth"
+  },
+  "summary": {
+    "de": "Persistenz über Project Data; HTML nur für Publish/Legacy-Import — nicht für Roundtrip-Rekonstruktion.",
+    "en": "Persist via Project Data; HTML only for publish/legacy import — not for round-trip reconstruction."
+  },
+  "status": "accepted",
+  "review_status": "needs-review",
+  "confidence": 0.9
+}

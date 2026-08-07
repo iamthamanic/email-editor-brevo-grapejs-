@@ -1,0 +1,6 @@
+{
+  "schema_version": 1,
+  "items": [
+    { "id": "bootstrap-commit", "type": "commit", "ref": "b4687f9314b075feff26e050d1fadd6c151a1a38" }
+  ]
+}

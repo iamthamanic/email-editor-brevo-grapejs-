@@ -1,0 +1,10 @@
+{
+  "schema_version": 1,
+  "id": "overview",
+  "title": {
+    "de": "Architektur",
+    "en": "Architecture"
+  },
+  "mermaid": "flowchart TB\n  ERP[ERP Host]\n  UI[apps/editor GrapesJS]\n  API[apps/api Fastify]\n  DB[(PostgreSQL)]\n  AS[Asset Storage]\n  R[email-renderer]\n  BA[brevo-adapter]\n  BREVO[Brevo]\n\n  ERP -->|iframe / later MFE| UI\n  UI --> API\n  API --> DB\n  API --> AS\n  API --> R\n  R --> BA\n  BA --> BREVO\n",
+  "source_path": ".project-memory/architecture/overview.mermaid"
+}

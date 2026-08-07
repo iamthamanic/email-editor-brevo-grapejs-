@@ -1,17 +1,22 @@
 {
   "name": "email-template-service",
   "private": true,
-  "version": "0.0.0",
-  "description": "ERP Email Template Builder (GrapesJS) with Brevo sync — monorepo scaffold",
+  "version": "0.1.0",
+  "description": "ERP Email Template Builder (GrapesJS) with Brevo sync — monorepo",
   "workspaces": [
     "apps/*",
     "packages/*"
   ],
   "scripts": {
-    "dev": "echo 'Start apps after Phase 1 bootstrap: npm run dev --workspace=apps/editor'",
+    "dev": "npm run dev --workspace=@email-template/editor",
+    "dev:editor": "npm run dev --workspace=@email-template/editor",
+    "dev:api": "npm run dev --workspace=@email-template/api",
     "checks": "bash scripts/run-checks.sh",
-    "test": "echo 'No unit tests yet — apps not bootstrapped'",
-    "test:e2e": "echo 'Add Playwright — see verify-ui skill'"
+    "test": "npm run test --workspace=@email-template/api",
+    "test:e2e": "npm run test:e2e --workspace=@email-template/editor",
+    "db:up": "docker compose up -d",
+    "db:migrate": "npm run db:migrate --workspace=@email-template/api",
+    "db:generate": "npm run db:generate --workspace=@email-template/api"
   },
   "engines": {
     "node": ">=20"

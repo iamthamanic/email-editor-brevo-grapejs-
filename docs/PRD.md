@@ -97,8 +97,8 @@ Auth über ERP (kurzlebige Tokens); Permissions serverseitig; Brevo-Key nur Back
 | Bereich | Entscheidung |
 |---------|--------------|
 | Stack Frontend | React, TypeScript, Vite, GrapesJS |
-| Stack Backend | Node.js, TypeScript, Fastify |
-| DB | PostgreSQL |
+| Stack Backend | Node.js, TypeScript, Fastify, Prisma |
+| DB | PostgreSQL (Docker Compose, eigene DB — nicht ERP-Schema) |
 | Assets | `AssetStorageProvider` (S3/R2/… austauschbar) |
 | Locale (UI) | de |
 | Integration v1 | Standalone; iframe-first später |

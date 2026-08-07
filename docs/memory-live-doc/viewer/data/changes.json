@@ -1,0 +1,71 @@
+{
+  "schema_version": 1,
+  "changes": [
+    {
+      "id": "2026-08-07-project-setup-bootstrap",
+      "date": "2026-08-07",
+      "type": "chore",
+      "status": "applied",
+      "title": {
+        "de": "Project-Setup Scaffold aus Technischem Konzept",
+        "en": "Project-setup scaffold from technical concept"
+      },
+      "summary": {
+        "de": "Leeres Repo mit PRD, AGENTS, README, .qa, UI-Styleguide, Monorepo-Platzhaltern und Checks-Script initialisiert. Kein Feature-Code.",
+        "en": "Empty repo initialized with PRD, AGENTS, README, .qa, UI styleguide, monorepo placeholders, and checks script. No feature code."
+      },
+      "user_impact": {
+        "de": [
+          "Noch keine lauffähige Editor-UI"
+        ],
+        "en": [
+          "No runnable editor UI yet"
+        ]
+      },
+      "developer_impact": {
+        "de": [
+          "Pipeline bereit für @pingpong-solution / Phase 1 Foundation"
+        ],
+        "en": [
+          "Pipeline ready for @pingpong-solution / Phase 1 Foundation"
+        ]
+      },
+      "operational_impact": {
+        "de": [
+          "Keine Runtime-Services"
+        ],
+        "en": [
+          "No runtime services"
+        ]
+      },
+      "git": {
+        "base": "b4687f9314b075feff26e050d1fadd6c151a1a38",
+        "head": "b4687f9314b075feff26e050d1fadd6c151a1a38",
+        "branch": "main",
+        "pull_request": null
+      },
+      "packages": [],
+      "affected_features": [
+        "foundation"
+      ],
+      "affected_components": [
+        "docs/PRD.md",
+        "AGENTS.md",
+        ".qa/project.yaml"
+      ],
+      "breaking_changes": [],
+      "migration_required": false,
+      "security_relevant": true,
+      "evidence": [
+        {
+          "type": "commit",
+          "ref": "b4687f9314b075feff26e050d1fadd6c151a1a38",
+          "label": "bootstrap commit"
+        }
+      ],
+      "screenshots": [],
+      "confidence": 0.85,
+      "review_status": "needs-review"
+    }
+  ]
+}

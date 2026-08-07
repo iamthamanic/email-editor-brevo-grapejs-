@@ -1,0 +1,19 @@
+{
+  "schema_version": 1,
+  "id": "email-template-service",
+  "title": {
+    "de": "Email Template Service (GrapesJS + Brevo)",
+    "en": "Email Template Service (GrapesJS + Brevo)"
+  },
+  "summary": {
+    "de": "Standalone-Service zur visuellen Bearbeitung von Brevo-E-Mail-Templates; GrapesJS Project JSON als Source of Truth; Brevo bleibt Versand-Runtime.",
+    "en": "Standalone service for visual Brevo email template editing; GrapesJS Project JSON as source of truth; Brevo remains delivery runtime."
+  },
+  "packages": ["apps/editor", "apps/api", "packages/*"],
+  "repository": {
+    "url": null,
+    "default_branch": "main"
+  },
+  "review_status": "needs-review",
+  "confidence": 0.7
+}

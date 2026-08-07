@@ -1,0 +1,21 @@
+services:
+  postgres:
+    image: postgres:16-alpine
+    container_name: email-template-postgres
+    ports:
+      # Bind localhost only — do not expose Postgres on LAN
+      - "127.0.0.1:5433:5432"
+    environment:
+      POSTGRES_USER: email
+      POSTGRES_PASSWORD: email
+      POSTGRES_DB: email_templates
+    volumes:
+      - email_template_pg:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U email -d email_templates"]
+      interval: 5s
+      timeout: 5s
+      retries: 10
+
+volumes:
+  email_template_pg:

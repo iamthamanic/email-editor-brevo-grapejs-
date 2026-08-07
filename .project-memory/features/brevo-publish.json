@@ -1,0 +1,16 @@
+{
+  "id": "brevo-publish",
+  "title": { "de": "Brevo Publish", "en": "Brevo Publish" },
+  "summary": { "de": "Adapter + Publish/Versionierung", "en": "Adapter + publish/versioning" },
+  "status": "planned",
+  "packages": ["apps/editor", "apps/api"],
+  "paths": [],
+  "user_impact": {
+    "de": ["Noch nicht implementiert — geplant laut PRD"],
+    "en": ["Not implemented yet — planned per PRD"]
+  },
+  "related_changes": ["2026-08-07-project-setup-bootstrap"],
+  "review_status": "needs-review",
+  "confidence": 0.55,
+  "locked": false
+}

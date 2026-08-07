@@ -1,0 +1,17 @@
+flowchart TB
+  ERP[ERP Host]
+  UI[apps/editor GrapesJS]
+  API[apps/api Fastify]
+  DB[(PostgreSQL)]
+  AS[Asset Storage]
+  R[email-renderer]
+  BA[brevo-adapter]
+  BREVO[Brevo]
+
+  ERP -->|iframe / later MFE| UI
+  UI --> API
+  API --> DB
+  API --> AS
+  API --> R
+  R --> BA
+  BA --> BREVO

@@ -2,89 +2,69 @@
 
 Visueller E-Mail-Template-Editor (GrapesJS) mit Brevo-Sync für ERP — Source of Truth ist GrapesJS Project JSON; Brevo bleibt Versand-Runtime.
 
-Siehe [docs/PRD.md](docs/PRD.md) für Produktumfang und [AGENTS.md](AGENTS.md) für Agent-/Architekturregeln.
+Siehe [docs/PRD.md](docs/PRD.md) und [AGENTS.md](AGENTS.md).
 
 ## Prerequisites
 
-- Node.js 20+ (recommended)
+- Node.js 20+
 - npm 10+ (workspaces)
-- PostgreSQL (für API, sobald `apps/api` bootstrapped ist)
-- Brevo API Key (nur Backend / Secret Manager — nie Frontend)
+- Docker (Postgres)
 
 ## Setup
 
 ```bash
-# From repository root
+cp .env.example .env
+cp .env.example apps/api/.env   # Prisma liest apps/api/.env
 npm install
-cp .env.example .env   # fill locally, never commit secrets
+npm run db:up
+npm run db:migrate             # interaktiv Name: init — oder: npm run db:push --workspace=@email-template/api
 ```
-
-Apps werden in Phase 1 (Foundation) angelegt. Bis dahin sind Workspaces Platzhalter.
 
 ## Development
 
-```bash
-# Editor (geplant)
-npm run dev --workspace=apps/editor
+Zwei Terminals:
 
-# API (geplant)
-npm run dev --workspace=apps/api
+```bash
+npm run dev:api      # http://localhost:3001
+npm run dev:editor   # http://localhost:5173 (proxy /api → API)
 ```
 
-Editor: [http://localhost:5173](http://localhost:5173)  
-API: [http://localhost:3001](http://localhost:3001) (geplant)
+`AUTH_MODE=dev` muss **explizit** gesetzt sein (Fail-closed: ohne Wert → 401).
+API und Postgres binden standardmäßig auf `127.0.0.1`.
 
-## Checks (quality gate)
+## Checks
 
 ```bash
 npm run checks
 ```
 
-Siehe `scripts/run-checks.sh` und [AGENTS.md](AGENTS.md). Solange Apps leer sind, meldet das Script den Scaffold-Status.
-
-## Tests
-
-```bash
-npm test              # unit tests, sobald konfiguriert
-npm run test:e2e      # Playwright — bootstrap via @verify-ui skill
-```
-
 ## Project structure
 
 ```
-email-template-service/
-├── apps/
-│   ├── editor/       # Vite + React + GrapesJS
-│   └── api/          # Fastify + Postgres
-├── packages/         # schema, editor-core, components, brevo-adapter, …
-├── docs/
-│   ├── PRD.md
-│   └── UI_STYLEGUIDE.md
-├── .qa/              # design, acceptance, verify-ui config
-├── scripts/
-└── AGENTS.md
+apps/editor/     Vite + React + GrapesJS
+apps/api/        Fastify + Prisma
+packages/
+  email-schema/
+  editor-core/
+  theme-contract/
 ```
 
-## Environment variables
-
-Document variables in `.env.example`. Do not commit real secrets.
+## Environment
 
 | Variable | Purpose |
 |----------|---------|
-| `DATABASE_URL` | PostgreSQL connection (API) |
-| `BREVO_API_KEY` | Brevo API key — **backend only** |
-| `ASSET_STORAGE_*` | Provider-specific (TBD) |
-| `AUTH_*` | ERP token verification (TBD) |
+| `DATABASE_URL` | Postgres (Docker: `localhost:5433`, user/pass/db `email` / `email` / `email_templates`) |
+| `AUTH_MODE` | Muss explizit `dev` sein für DevAuth; unset → 401 |
+| `API_HOST` | default `127.0.0.1` (DevAuth blockt Non-Loopback) |
+| `API_PORT` | default 3001 |
+| `EDITOR_ORIGIN` | CORS allowlist (default http://localhost:5173) |
+| `ALLOW_INSECURE_DEV` | `1` erlaubt DevAuth auf Non-Loopback (nicht empfohlen) |
+
+Brevo-Key nie im Frontend.
 
 ## Agent workflow
 
-1. `@project-setup` — bootstrap (once) ✅
-2. `@pingpong-solution` — design before features
-3. `@implement` — code + acceptance artifact
-4. `@verify-ui` — browser verification
-
-See [AGENTS.md](AGENTS.md).
-
-## License
-
-TBD
+1. `@project-setup` ✅
+2. `@pingpong-solution` ✅ Phase 1
+3. `@implement` — Phase 1 Foundation
+4. `@verify-ui` — Browser-Roundtrip prüfen

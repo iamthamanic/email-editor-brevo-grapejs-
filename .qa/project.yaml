@@ -56,5 +56,7 @@ viewports:
     width: 1280
     height: 720
 
-# Main navigation labels for smoke tests — fill when UI routes exist
-navigation: []
+# Main navigation labels for smoke tests
+navigation:
+  - E-Mail Templates
+  - Neues Template

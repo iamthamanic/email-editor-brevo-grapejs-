@@ -28,8 +28,8 @@ Standalone **Email Template Service** für ein ERP: visuelle Bearbeitung von Bre
 | Bereich | Technologie | Notiz |
 |---------|-------------|-------|
 | Frontend | React, TypeScript, Vite, GrapesJS | App: `apps/editor` |
-| Backend | Node.js, TypeScript, Fastify | App: `apps/api` |
-| DB | PostgreSQL | Templates, Versionen, Audit |
+| Backend | Node.js, TypeScript, Fastify, **Prisma** | App: `apps/api`, eigene Postgres-DB |
+| DB | PostgreSQL (+ Docker Compose) | Prisma migrations |
 | Assets | `AssetStorageProvider` | S3/R2/… austauschbar |
 | Styling | CSS Custom Properties (Theme Contract) | Tokens vom Host; Fallbacks lokal |
 | Shared | `packages/` (schema, editor-core, components, brevo-adapter, importer, renderer, theme-contract) | DRY Frontend/Backend |

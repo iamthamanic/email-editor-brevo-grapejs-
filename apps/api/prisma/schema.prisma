@@ -1,0 +1,32 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+/// Email template — GrapesJS project JSON is source of truth in editorData.
+model EmailTemplate {
+  id                  String    @id @default(uuid())
+  brevoTemplateId     BigInt?   @unique @map("brevo_template_id")
+  name                String
+  subject             String?
+  senderName          String?   @map("sender_name")
+  senderEmail         String?   @map("sender_email")
+  replyTo             String?   @map("reply_to")
+  status              String    @default("DRAFT")
+  source              String    @default("LOCAL")
+  editorData          Json      @map("editor_data")
+  publishedHtml       String?   @map("published_html") @db.Text
+  publishedEditorData Json?     @map("published_editor_data")
+  brevoModifiedAt     DateTime? @map("brevo_modified_at")
+  lastSyncedAt        DateTime? @map("last_synced_at")
+  revision            Int       @default(1)
+  createdAt           DateTime  @default(now()) @map("created_at")
+  updatedAt           DateTime  @updatedAt @map("updated_at")
+  publishedAt         DateTime? @map("published_at")
+
+  @@map("email_templates")
+}

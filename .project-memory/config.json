@@ -1,0 +1,7 @@
+{
+  "schema_version": 1,
+  "languages": { "json": ["de", "en"], "markdown_primary": "de", "markdown_en_dir": "docs/en" },
+  "viewer_path": "docs/memory-live-doc/viewer",
+  "storage_root": ".project-memory",
+  "history_coverage": { "status": "complete", "reason": "young_repo_bootstrap" }
+}

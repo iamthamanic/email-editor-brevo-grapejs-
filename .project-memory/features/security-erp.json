@@ -1,0 +1,16 @@
+{
+  "id": "security-erp",
+  "title": { "de": "Security & ERP Adapter", "en": "Security & ERP Adapter" },
+  "summary": { "de": "Authz, Sanitize, Theme Contract", "en": "Authz, sanitize, theme contract" },
+  "status": "planned",
+  "packages": ["apps/editor", "apps/api"],
+  "paths": [],
+  "user_impact": {
+    "de": ["Noch nicht implementiert — geplant laut PRD"],
+    "en": ["Not implemented yet — planned per PRD"]
+  },
+  "related_changes": ["2026-08-07-project-setup-bootstrap"],
+  "review_status": "needs-review",
+  "confidence": 0.55,
+  "locked": false
+}
