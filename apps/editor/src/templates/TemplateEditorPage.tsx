@@ -1,5 +1,5 @@
 /**
- * GrapesJS editor page with debounced autosave and DE save states.
+ * GrapesJS editor page with debounced autosave, variable picker, sample preview.
  * Location: apps/editor/src/templates/TemplateEditorPage.tsx
  */
 
@@ -12,6 +12,8 @@ import {
 } from "@email-template/editor-core";
 import type { EmailTemplateDto } from "@email-template/email-schema";
 import { fetchTemplate, patchTemplate } from "../api/templatesApi";
+import { VariablePicker } from "../variables/VariablePicker";
+import { SamplePreview } from "../variables/SamplePreview";
 
 type SaveState = "idle" | "saving" | "saved" | "failed";
 
@@ -28,6 +30,7 @@ export function TemplateEditorPage() {
   const [loadError, setLoadError] = useState<string | null>(null);
   const [saveState, setSaveState] = useState<SaveState>("idle");
   const [saveError, setSaveError] = useState<string | null>(null);
+  const [editorReady, setEditorReady] = useState(false);
 
   useEffect(() => {
     templateRef.current = template;
@@ -53,6 +56,7 @@ export function TemplateEditorPage() {
           projectData: data.editorData,
         });
         editorRef.current = editor;
+        setEditorReady(true);
         // ponytail: Playwright hook — remove when custom blocks make RTE flows stable
         if (import.meta.env.DEV) {
           (window as Window & { __emailEditor?: Editor }).__emailEditor = editor;
@@ -96,6 +100,7 @@ export function TemplateEditorPage() {
 
     return () => {
       cancelled = true;
+      setEditorReady(false);
       if (saveTimerRef.current) clearTimeout(saveTimerRef.current);
       editor?.destroy();
       editorRef.current = null;
@@ -130,9 +135,14 @@ export function TemplateEditorPage() {
         </p>
       )}
 
-      <div className="editor-canvas-wrap">
-        <div ref={canvasRef} className="gjs-host" />
+      <div className="editor-body">
+        <div className="editor-canvas-wrap">
+          <div ref={canvasRef} className="gjs-host" />
+        </div>
+        <VariablePicker editor={editorReady ? editorRef.current : null} />
       </div>
+
+      <SamplePreview editor={editorReady ? editorRef.current : null} />
     </div>
   );
 }

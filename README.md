@@ -45,9 +45,13 @@ apps/editor/     Vite + React + GrapesJS
 apps/api/        Fastify + Prisma
 packages/
   email-schema/
+  email-components/
+  email-variables/   # Brevo params.* registry + sample
   editor-core/
   theme-contract/
 ```
+
+API (Auszug): `GET /api/variables`, `GET /api/preview/sample` (DevAuth).
 
 ## Environment
 

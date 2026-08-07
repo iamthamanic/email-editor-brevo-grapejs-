@@ -11,6 +11,7 @@ import {
   getAuthMode,
 } from "./auth/dev-auth.js";
 import { registerTemplateRoutes } from "./templates/routes.js";
+import { registerVariableRoutes } from "./variables/routes.js";
 
 const PORT = Number(process.env.API_PORT ?? 3001);
 const HOST = process.env.API_HOST ?? "127.0.0.1";
@@ -41,6 +42,7 @@ async function main(): Promise<void> {
   }));
 
   await registerTemplateRoutes(app);
+  await registerVariableRoutes(app);
 
   await app.listen({ port: PORT, host: HOST });
   console.info(

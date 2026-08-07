@@ -1,0 +1,52 @@
+{
+  "id": "2026-08-07-phase-4-variables",
+  "date": "2026-08-07",
+  "type": "feat",
+  "status": "committed",
+  "title": {
+    "de": "Phase 4 — Variables",
+    "en": "Phase 4 — Variables"
+  },
+  "summary": {
+    "de": "email-variables Package, API Katalog/Sample, Picker und Beispieldaten-Preview.",
+    "en": "email-variables package, API catalog/sample, picker and sample preview."
+  },
+  "user_impact": {
+    "de": ["Variablen einfügen", "Beispieldaten-Vorschau"],
+    "en": ["Insert variables", "Sample preview"]
+  },
+  "developer_impact": {
+    "de": ["packages/email-variables", "GET /api/variables", "GET /api/preview/sample"],
+    "en": ["packages/email-variables", "GET /api/variables", "GET /api/preview/sample"]
+  },
+  "operational_impact": {
+    "de": ["Keine DB-Migration"],
+    "en": ["No DB migration"]
+  },
+  "git": {
+    "base": "38799725b93d4e776f70594929ed9d26b32bc35f",
+    "head": "working-tree",
+    "branch": "main",
+    "pull_request": null
+  },
+  "packages": ["packages/email-variables", "apps/api", "apps/editor"],
+  "affected_features": ["variables"],
+  "affected_components": [
+    "packages/email-variables/",
+    "apps/api/src/variables/routes.ts",
+    "apps/editor/src/variables/"
+  ],
+  "breaking_changes": [],
+  "migration_required": false,
+  "security_relevant": true,
+  "evidence": [
+    {
+      "type": "path",
+      "ref": ".qa/evidence/phase-4-variables/",
+      "label": "Playwright screenshots"
+    }
+  ],
+  "review_status": "needs-review",
+  "confidence": 0.88,
+  "locked": false
+}

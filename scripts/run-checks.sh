@@ -13,6 +13,9 @@ npm run typecheck --workspace=@email-template/email-schema
 echo "→ typecheck email-components"
 npm run typecheck --workspace=@email-template/email-components
 
+echo "→ typecheck email-variables"
+npm run typecheck --workspace=@email-template/email-variables
+
 echo "→ typecheck editor-core"
 npm run typecheck --workspace=@email-template/editor-core
 
@@ -27,6 +30,9 @@ npm run test --workspace=@email-template/api
 
 echo "→ unit tests email-components"
 npm run test --workspace=@email-template/email-components
+
+echo "→ unit tests email-variables"
+npm run test --workspace=@email-template/email-variables
 
 echo "→ build editor"
 npm run build --workspace=@email-template/editor

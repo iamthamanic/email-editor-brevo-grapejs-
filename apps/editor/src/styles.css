@@ -122,7 +122,7 @@ h1 {
 .editor-shell {
   height: 100%;
   display: grid;
-  grid-template-rows: auto 1fr;
+  grid-template-rows: auto 1fr auto;
 }
 
 .editor-topbar {
@@ -151,6 +151,12 @@ h1 {
   font-size: 0.9rem;
 }
 
+.editor-body {
+  min-height: 0;
+  display: grid;
+  grid-template-columns: 1fr minmax(220px, 280px);
+}
+
 .editor-canvas-wrap {
   min-height: 0;
   background: #cfd8d4;
@@ -162,4 +168,102 @@ h1 {
 
 .page-pad {
   padding: var(--erp-spacing-md);
+}
+
+.btn-secondary {
+  appearance: none;
+  border: 1px solid var(--erp-color-border);
+  border-radius: var(--erp-radius-small);
+  background: var(--erp-color-surface);
+  color: var(--erp-color-text);
+  padding: 0.45rem 0.75rem;
+  font: inherit;
+  cursor: pointer;
+}
+
+.variables-panel {
+  overflow: auto;
+  background: var(--erp-color-surface);
+  border-left: 1px solid var(--erp-color-border);
+  padding: var(--erp-spacing-md);
+  display: grid;
+  gap: var(--erp-spacing-sm);
+  align-content: start;
+}
+
+.variables-title {
+  margin: 0;
+  font-size: 0.95rem;
+}
+
+.variables-help {
+  margin: 0;
+  font-size: 0.8rem;
+}
+
+.variables-help code {
+  font-size: 0.75rem;
+}
+
+.variables-groups {
+  display: grid;
+  gap: var(--erp-spacing-md);
+}
+
+.variables-group-label {
+  margin: 0 0 var(--erp-spacing-xs);
+  font-size: 0.75rem;
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+  color: var(--erp-color-text-muted);
+}
+
+.variables-list {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  display: grid;
+  gap: 4px;
+}
+
+.variables-item {
+  width: 100%;
+  text-align: left;
+  appearance: none;
+  border: 1px solid var(--erp-color-border);
+  border-radius: var(--erp-radius-small);
+  background: var(--erp-color-background);
+  color: var(--erp-color-text);
+  padding: 0.4rem 0.55rem;
+  font: inherit;
+  font-size: 0.85rem;
+  cursor: pointer;
+}
+
+.variables-item:hover {
+  border-color: var(--erp-color-primary);
+}
+
+.sample-preview {
+  border-top: 1px solid var(--erp-color-border);
+  background: var(--erp-color-surface);
+  padding: var(--erp-spacing-sm) var(--erp-spacing-md);
+  display: grid;
+  gap: var(--erp-spacing-sm);
+}
+
+.sample-preview-toggle {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.5rem;
+  font-size: 0.9rem;
+  cursor: pointer;
+}
+
+.sample-preview-frame {
+  width: 100%;
+  height: 220px;
+  border: 1px solid var(--erp-color-border);
+  border-radius: var(--erp-radius-small);
+  background: #fff;
 }

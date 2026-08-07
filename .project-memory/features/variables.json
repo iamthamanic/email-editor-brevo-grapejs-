@@ -1,16 +1,36 @@
 {
   "id": "variables",
   "title": { "de": "Variables", "en": "Variables" },
-  "summary": { "de": "Brevo-Variablen Registry + Preview", "en": "Brevo variable registry + preview" },
-  "status": "planned",
-  "packages": ["apps/editor", "apps/api"],
-  "paths": [],
-  "user_impact": {
-    "de": ["Noch nicht implementiert — geplant laut PRD"],
-    "en": ["Not implemented yet — planned per PRD"]
+  "summary": {
+    "de": "params.* Registry + Picker + Sample-API/Preview",
+    "en": "params.* registry + picker + sample API/preview"
   },
-  "related_changes": ["2026-08-07-project-setup-bootstrap"],
+  "status": "implemented",
+  "packages": [
+    "packages/email-variables",
+    "apps/api",
+    "apps/editor"
+  ],
+  "paths": [
+    "packages/email-variables/",
+    "apps/api/src/variables/",
+    "apps/editor/src/variables/"
+  ],
+  "user_impact": {
+    "de": [
+      "Variable-Picker (Kunde/Auftrag/Rechnung)",
+      "Beispieldaten-Preview"
+    ],
+    "en": [
+      "Variable picker (customer/order/invoice)",
+      "Sample data preview"
+    ]
+  },
+  "related_changes": [
+    "2026-08-07-project-setup-bootstrap",
+    "2026-08-07-phase-4-variables"
+  ],
   "review_status": "needs-review",
-  "confidence": 0.55,
+  "confidence": 0.88,
   "locked": false
 }

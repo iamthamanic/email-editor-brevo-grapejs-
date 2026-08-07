@@ -16,6 +16,7 @@
     "@email-template/editor-core": "*",
     "@email-template/email-components": "*",
     "@email-template/email-schema": "*",
+    "@email-template/email-variables": "*",
     "@email-template/theme-contract": "*",
     "grapesjs": "^0.22.9",
     "react": "^19.0.0",

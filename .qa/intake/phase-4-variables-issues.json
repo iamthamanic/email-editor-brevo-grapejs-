@@ -1,0 +1,39 @@
+{
+  "epicSlug": "phase-4-variables",
+  "designPath": ".qa/design/phase-4-variables.md",
+  "defaultLabels": [],
+  "issues": [
+    {
+      "title": "email-variables registry + sample map",
+      "featureSlug": "phase-4-variables-registry",
+      "priority": "P0",
+      "labels": ["P0"],
+      "dependsOn": [],
+      "body": "## Intent\nShared Package mit voller Customer/Order/Invoice-Param-Liste (HVAI EmailParams + Mahnung), Expression-Helfer und Sample-Map — eine Registry für API und Editor.\n\n## User Journey\n1. Entwickler importiert das Workspace-Package `email-variables`.\n2. System liefert defs + `{{ params.x }}` + Sample-Werte.\n3. Kein UI in diesem Slice.\n\n## Problem\nKeine zentrale Variable Registry (AGENTS Regel 4). Siehe `.qa/design/phase-4-variables.md`.\n\n## Solution\nNeues Package `packages/email-variables`: `registry`, `expression`, `sample`, `substitute`; Unit-Tests; Katalog laut Design-Tabelle. Typed-strict, keine Escape Hatches.\n\n## Runtime\n| Axis | This slice |\n|------|------------|\n| Local (desktop) | yes |\n| Cloud session | n/a |\n| Appwrite Functions | skip |\n\n## Edge Cases\n- Unbekannter Key → validate reject\n- Whitespace in `{{ params.x }}` beim Parse tolerieren (HVAI Regex)\n- Sample ohne PII (Musterdaten)\n\n## Acceptance\n\n- [ ] Alle Design-Katalog-Keys vorhanden, gruppiert customer|order|invoice|meta\n- [ ] `toExpression('vorname')` → `{{ params.vorname }}`\n- [ ] `substitute(html, sample)` ersetzt bekannte Tags, lässt unbekannte stehen\n- [ ] Unit tests green; Touched files: zero type escape hatches (`@typed-strict` / Boy Scout)\n\n## Design\nEpic: `.qa/design/phase-4-variables.md`\n\n## Runner\nLabels: P0\nFeature slug: `phase-4-variables-registry`"
+    },
+    {
+      "title": "API GET variables + preview sample",
+      "featureSlug": "phase-4-variables-api",
+      "priority": "P0",
+      "labels": ["P0"],
+      "dependsOn": ["email-variables registry + sample map"],
+      "body": "## Intent\nAuth-geschützte Endpoints liefern Katalog und Sample-Daten im `{ data, error }`-Format.\n\n## User Journey\n1. Editor (AUTH_MODE=dev) ruft `GET /api/variables` und `GET /api/preview/sample`.\n2. System antwortet mit Registry + Sample-Map.\n3. Ohne Auth → 401 (DevAuth).\n\n## Problem\nSample soll über API kommen; Catalog nicht nur Client-Bundle. Design: `.qa/design/phase-4-variables.md`.\n\n## Solution\n`apps/api/src/variables/routes.ts`; Register in `index.ts`; Import Package; keine Mutation-Endpoints.\n\n## Runtime\n| Axis | This slice |\n|------|------------|\n| Local (desktop) | yes |\n| Cloud session | same routes later with JWT |\n| Appwrite Functions | skip |\n\n## Edge Cases\n- AUTH_MODE unset → 401\n- Response shape `{ data, error: null }`\n\n## Acceptance\n\n- [ ] `GET /api/variables` returns grouped defs (key, label, group, expression)\n- [ ] `GET /api/preview/sample` returns sample map for all keys\n- [ ] Unauthenticated rejected\n- [ ] Checks/tests; Touched files: zero type escape hatches (`@typed-strict` / Boy Scout)\n\n## Design\nEpic: `.qa/design/phase-4-variables.md`\n\n## Runner\nLabels: P0\nFeature slug: `phase-4-variables-api`"
+    },
+    {
+      "title": "Variable picker + insert into canvas",
+      "featureSlug": "phase-4-variables-picker",
+      "priority": "P0",
+      "labels": ["P0"],
+      "dependsOn": ["API GET variables + preview sample"],
+      "body": "## Intent\nDE Variable-Picker im Editor: Klick fügt `{{ params.<key> }}` in selektierten Text/Button ein.\n\n## User Journey\n1. Nutzer öffnet Template-Editor.\n2. Öffnet „Variablen“, wählt z. B. „Vorname“.\n3. Sieht `{{ params.vorname }}` im Canvas; Autosave speichert Project JSON.\n\n## Problem\nKein UI zum Einfügen von Merge-Tags. Design: `.qa/design/phase-4-variables.md`.\n\n## Solution\n`apps/editor/src/variables/VariablePicker.tsx` + API-Client; Integration in `TemplateEditorPage`; nur Keys aus API; GrapesJS Selection-Insert.\n\n## Runtime\n| Axis | This slice |\n|------|------------|\n| Local (desktop) | yes |\n| Cloud session | later |\n| Appwrite Functions | skip |\n\n## Edge Cases\n- Keine Selection → Hinweis „Bitte Text oder Button wählen“\n- API fail → Error + Retry\n- Loading-State\n\n## Acceptance\n\n- [ ] Picker zeigt Gruppen Kunde / Auftrag / Rechnung (DE)\n- [ ] Insert schreibt exakte Expression; persistiert nach Reload\n- [ ] E2E happy path; Touched files: zero type escape hatches (`@typed-strict` / Boy Scout)\n\n## Design\nEpic: `.qa/design/phase-4-variables.md`\n\n## Runner\nLabels: P0\nFeature slug: `phase-4-variables-picker`"
+    },
+    {
+      "title": "Preview with sample substitution",
+      "featureSlug": "phase-4-variables-preview",
+      "priority": "P1",
+      "labels": ["P1"],
+      "dependsOn": ["Variable picker + insert into canvas"],
+      "body": "## Intent\nToggle „Beispieldaten“: Preview zeigt substituierten HTML aus Sample-API (nicht Live-Brevo).\n\n## User Journey\n1. Nutzer hat Variablen im Template.\n2. Aktiviert Beispieldaten-Preview.\n3. Sieht Sample-Werte statt `{{ params.* }}`.\n\n## Problem\nPRD Preview mit Sample Data fehlt. Design: `.qa/design/phase-4-variables.md`.\n\n## Solution\nPreview: GrapesJS-HTML → `substitute` mit Sample von API; sandboxed iframe; Toggle off lässt Tags sichtbar; Project JSON unverändert.\n\n## Runtime\n| Axis | This slice |\n|------|------------|\n| Local (desktop) | yes |\n| Cloud session | later |\n| Appwrite Functions | skip |\n\n## Edge Cases\n- Toggle off → raw expressions\n- Unknown tags remain\n- Sample fetch fail → Error, kein stiller leerer Fallback ohne Hinweis\n\n## Acceptance\n\n- [ ] Toggle ersetzt bekannte params nur in Preview\n- [ ] Project JSON / Autosave unverändert (keine Sample-Werte persistiert)\n- [ ] E2E; Touched files: zero type escape hatches (`@typed-strict` / Boy Scout)\n\n## Design\nEpic: `.qa/design/phase-4-variables.md`\n\n## Runner\nLabels: P1\nFeature slug: `phase-4-variables-preview`"
+    }
+  ]
+}
