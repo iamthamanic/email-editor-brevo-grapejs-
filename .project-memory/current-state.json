@@ -2,8 +2,8 @@
   "schema_version": 1,
   "phase": "phase-4",
   "summary": {
-    "de": "Phase 1–4 implementiert (Phase 4 Variables uncommitted). Brevo Publish/Sync und ERP-Auth noch offen.",
-    "en": "Phases 1–4 implemented (Phase 4 Variables uncommitted). Brevo Publish/Sync and ERP auth still open."
+    "de": "Phase 1–4 committed; Variables (params.* Picker + Sample-API) live. Brevo Publish/Sync und ERP-Auth noch offen.",
+    "en": "Phases 1–4 committed; Variables (params.* picker + sample API) live. Brevo Publish/Sync and ERP auth still open."
   },
   "milestones": [
     {
@@ -29,19 +29,15 @@
     {
       "id": "phase-4-variables",
       "title": { "de": "Phase 4 — Variables", "en": "Phase 4 — Variables" },
-      "status": "in_progress"
+      "status": "done"
     }
   ],
   "open_risks": [
     {
       "de": "ERP-Auth und Deployment noch offen",
       "en": "ERP auth and deployment still TBD"
-    },
-    {
-      "de": "Phase 4 noch uncommitted",
-      "en": "Phase 4 still uncommitted"
     }
   ],
   "review_status": "needs-review",
-  "confidence": 0.88
+  "confidence": 0.9
 }
