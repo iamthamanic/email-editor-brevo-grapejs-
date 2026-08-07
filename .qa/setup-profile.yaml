@@ -1,0 +1,7 @@
+# Optional overrides for /project-setup (user may edit)
+locale: de
+appRoot: apps/editor
+prdPath: docs/PRD.md
+styleguidePath: docs/UI_STYLEGUIDE.md
+enableStubtree: false
+enablePonytail: false
