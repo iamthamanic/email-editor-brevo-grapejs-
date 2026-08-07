@@ -1,5 +1,5 @@
 /**
- * Variable picker panel — groups Kunde/Auftrag/Rechnung, inserts params expressions.
+ * Variable picker — groups Kunde/Auftrag/Rechnung; optional filter + embedded mode.
  * Location: apps/editor/src/variables/VariablePicker.tsx
  */
 
@@ -15,9 +15,20 @@ const GROUP_ORDER = ["customer", "order", "invoice", "meta"] as const;
 
 interface VariablePickerProps {
   editor: Editor | null;
+  /** Case-insensitive filter on label / key / expression */
+  filterQuery?: string;
+  /** Hide outer title when inside Library accordion */
+  embedded?: boolean;
+  /** Called after a successful insert (e.g. close toolbar dropdown) */
+  onAfterPick?: () => void;
 }
 
-export function VariablePicker({ editor }: VariablePickerProps) {
+export function VariablePicker({
+  editor,
+  filterQuery = "",
+  embedded = false,
+  onAfterPick,
+}: VariablePickerProps) {
   const [variables, setVariables] = useState<VariableDto[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
@@ -53,25 +64,39 @@ export function VariablePicker({ editor }: VariablePickerProps) {
       setHint("Editor noch nicht bereit.");
       return;
     }
-    const ok = insertVariableExpression(editor, variable.expression);
+    const ok = insertVariableExpression(editor, {
+      key: variable.key,
+      label: variable.label,
+      expression: variable.expression,
+    });
     if (!ok) {
-      setHint("Bitte Text oder Button wählen");
+      setHint("Bitte Text-, Überschrift- oder Button-Block wählen");
+      return;
     }
+    onAfterPick?.();
   }
+
+  const q = filterQuery.trim().toLowerCase();
+  const filtered = q
+    ? variables.filter((v) => {
+        const hay = `${v.label} ${v.key} ${v.expression} ${v.groupLabel}`.toLowerCase();
+        return hay.includes(q);
+      })
+    : variables;
 
   if (loading) {
     return (
-      <aside className="variables-panel" aria-busy="true">
-        <h2 className="variables-title">Variablen</h2>
+      <div className="variables-panel" aria-busy="true">
+        {!embedded && <h2 className="variables-title">Variablen</h2>}
         <p className="muted">Laden…</p>
-      </aside>
+      </div>
     );
   }
 
   if (error) {
     return (
-      <aside className="variables-panel" role="alert">
-        <h2 className="variables-title">Variablen</h2>
+      <div className="variables-panel" role="alert">
+        {!embedded && <h2 className="variables-title">Variablen</h2>}
         <p className="error">{error}</p>
         <button
           type="button"
@@ -93,47 +118,57 @@ export function VariablePicker({ editor }: VariablePickerProps) {
         >
           Erneut versuchen
         </button>
-      </aside>
+      </div>
     );
   }
 
   return (
-    <aside className="variables-panel" data-testid="variable-picker">
-      <h2 className="variables-title">Variablen</h2>
+    <div className="variables-panel" data-testid="variable-picker">
+      {!embedded && <h2 className="variables-title">Variablen</h2>}
       <p className="muted variables-help">
-        Klick fügt <code>{"{{ params.* }}"}</code> ein
+        Klick fügt ein Badge ein. Block wählen, dann Variable tippen — Doppelklick
+        auf Text zum Tippen.
       </p>
       {hint && (
         <p className="error" role="status">
           {hint}
         </p>
       )}
-      <div className="variables-groups">
-        {GROUP_ORDER.map((group) => {
-          const items = variables.filter((v) => v.group === group);
-          if (items.length === 0) return null;
-          const groupLabel = items[0]?.groupLabel ?? group;
-          return (
-            <section key={group} className="variables-group">
-              <h3 className="variables-group-label">{groupLabel}</h3>
-              <ul className="variables-list">
-                {items.map((v) => (
-                  <li key={v.key}>
-                    <button
-                      type="button"
-                      className="variables-item"
-                      data-variable-key={v.key}
-                      onClick={() => onPick(v)}
-                    >
-                      {v.label}
-                    </button>
-                  </li>
-                ))}
-              </ul>
-            </section>
-          );
-        })}
-      </div>
-    </aside>
+      {filtered.length === 0 ? (
+        <p className="muted">Keine Treffer</p>
+      ) : (
+        <div className="variables-groups">
+          {GROUP_ORDER.map((group) => {
+            const items = filtered.filter((v) => v.group === group);
+            if (items.length === 0) return null;
+            const groupLabel = items[0]?.groupLabel ?? group;
+            return (
+              <section key={group} className="variables-group">
+                <h3 className="variables-group-label">{groupLabel}</h3>
+                <ul className="variables-list">
+                  {items.map((v) => (
+                    <li key={v.key}>
+                      <button
+                        type="button"
+                        className="variables-item"
+                        data-variable-key={v.key}
+                        onClick={() => onPick(v)}
+                      >
+                        <span className="variables-item-main">
+                          <span className="variables-badge-preview">
+                            {v.expression}
+                          </span>
+                        </span>
+                        <span className="variables-expr">{v.label}</span>
+                      </button>
+                    </li>
+                  ))}
+                </ul>
+              </section>
+            );
+          })}
+        </div>
+      )}
+    </div>
   );
 }

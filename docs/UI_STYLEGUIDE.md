@@ -18,21 +18,24 @@ Reference for humans and agents. `@verify-ui` uses this for visual/UX sanity che
 
 Fallback-Werte lokal setzen; Host überschreibt. Keine ERP-CSS-Klassen im Editor.
 
-| Token | Beispiel-Fallback | Usage |
-|-------|-------------------|-------|
-| `--erp-font-family` | system-ui stack | UI chrome (nicht E-Mail-Inhalt) |
+| Token | Beispiel-Fallback (HVAI light) | Usage |
+|-------|-------------------------------|-------|
+| `--erp-font-family` | Ant/system stack | UI chrome (nicht E-Mail-Inhalt) |
 | `--erp-font-size-base` | 14px | Body UI |
-| `--erp-color-primary` | #1a5f4a | Primary actions (Publish, CTA) |
-| `--erp-color-background` | #f4f6f5 | App background |
+| `--erp-color-primary` | #275073 | Primary actions (Publish, CTA) |
+| `--erp-color-background` | #FAFAFA | App background |
 | `--erp-color-surface` | #ffffff | Panels, canvas chrome |
-| `--erp-color-border` | #d0d7d4 | Dividers, inputs |
-| `--erp-color-text` | #14201c | Primary text |
-| `--erp-color-text-muted` | #5c6b66 | Secondary / Saved |
-| `--erp-radius-small` | 4px | Inputs, chips |
+| `--erp-color-canvas` | #f5f5f5 | Editor content area |
+| `--erp-color-border` | #f0f0f0 | Dividers, inputs |
+| `--erp-color-text` | #171717 | Primary text |
+| `--erp-color-text-muted` | #275073 | Secondary / descriptions |
+| `--erp-color-header` | rgb(80,123,164) | Top bar (HVAI Layout.headerBg) |
+| `--erp-radius-small` | 5px | Inputs, chips (Ant borderRadius) |
 | `--erp-radius-medium` | 8px | Panels |
 | `--erp-spacing-xs` … `lg` | 4–24px | Gaps, padding |
 
-`ThemeAdapter` liefert: colors, typography, spacing, radius, darkMode. postMessage darf nur definierte Theme-Tokens — kein beliebiges CSS.
+Embed: `?embed=1` setzt `data-embed="1"` (ruhigere Topbar für iframe im ERP).
+`applyThemeTokens()` akzeptiert nur `--erp-*` Werte ohne CSS-Injection.
 
 ## Typography
 

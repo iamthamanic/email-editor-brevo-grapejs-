@@ -15,6 +15,11 @@ export type { VariableDef, VariableGroup } from "./registry.js";
 export {
   extractParamKeys,
   isValidExpression,
+  isValidParamPath,
+  PARAM_EXPR_GLOBAL,
+  PARAM_PATH,
+  PARAM_SEGMENT,
+  splitParamExpressions,
   toExpression,
 } from "./expression.js";
 

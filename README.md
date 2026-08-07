@@ -22,15 +22,23 @@ npm run db:migrate             # interaktiv Name: init — oder: npm run db:push
 
 ## Development
 
-Zwei Terminals:
+Zwei Terminals (beide nötig — sonst leere Proxy-Antwort / JSON-Fehler im Browser):
 
 ```bash
-npm run dev:api      # http://localhost:3001
+npm run db:up        # Postgres auf 5433 (einmalig / prüfen)
+npm run dev:api      # http://127.0.0.1:3001  — AUTH_MODE=dev in apps/api/.env
 npm run dev:editor   # http://localhost:5173 (proxy /api → API)
 ```
 
-`AUTH_MODE=dev` muss **explizit** gesetzt sein (Fail-closed: ohne Wert → 401).
-API und Postgres binden standardmäßig auf `127.0.0.1`.
+Editor + Autosave + Variablen laufen **ohne Brevo**. Brevo-Templates laden:
+
+1. `BREVO_API_KEY=…` in `apps/api/.env` setzen
+2. API neu starten (`npm run dev:api`)
+3. In der Template-Liste **Von Brevo laden** klicken
+
+Das speichert Brevo-HTML lokal (`publishedHtml`); beim Öffnen greift ggf. die Auto-Konvertierung. Nie `VITE_*` für den Key.
+
+Legacy-HTML: Im Editor **HTML**-Modus Brevo-Markup einfügen → **Edit** konvertiert deterministisch in Blöcke (`POST /api/templates/:id/convert`). Templates mit gespeichertem Legacy-HTML und leerem `editorData` werden beim Öffnen automatisch vorbereitet („Template wird vorbereitet…“).
 
 ## Checks
 
@@ -62,6 +70,7 @@ API (Auszug): `GET /api/variables`, `GET /api/preview/sample` (DevAuth).
 | `API_HOST` | default `127.0.0.1` (DevAuth blockt Non-Loopback) |
 | `API_PORT` | default 3001 |
 | `EDITOR_ORIGIN` | CORS allowlist (default http://localhost:5173) |
+| `BREVO_API_KEY` | Brevo REST key (nur Backend) — Sync: „Von Brevo laden“ |
 | `ALLOW_INSECURE_DEV` | `1` erlaubt DevAuth auf Non-Loopback (nicht empfohlen) |
 
 Brevo-Key nie im Frontend.

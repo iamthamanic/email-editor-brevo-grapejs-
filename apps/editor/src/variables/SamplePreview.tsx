@@ -13,10 +13,15 @@ import { fetchSampleData } from "../api/variablesApi";
 
 interface SamplePreviewProps {
   editor: Editor | null;
+  /** When true, start with Beispieldaten on (drawer open). */
+  defaultEnabled?: boolean;
 }
 
-export function SamplePreview({ editor }: SamplePreviewProps) {
-  const [enabled, setEnabled] = useState(false);
+export function SamplePreview({
+  editor,
+  defaultEnabled = false,
+}: SamplePreviewProps) {
+  const [enabled, setEnabled] = useState(defaultEnabled);
   const sampleRef = useRef<SampleData | null>(null);
   const [html, setHtml] = useState("");
   const [error, setError] = useState<string | null>(null);

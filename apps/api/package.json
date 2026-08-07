@@ -16,6 +16,7 @@
   "dependencies": {
     "@email-template/email-schema": "*",
     "@email-template/email-variables": "*",
+    "@email-template/legacy-importer": "*",
     "@prisma/client": "^6.19.2",
     "dotenv": "^16.4.7",
     "fastify": "^5.2.1"

@@ -12,6 +12,7 @@ model EmailTemplate {
   id                  String    @id @default(uuid())
   brevoTemplateId     BigInt?   @unique @map("brevo_template_id")
   name                String
+  label               String?
   subject             String?
   senderName          String?   @map("sender_name")
   senderEmail         String?   @map("sender_email")
@@ -28,5 +29,54 @@ model EmailTemplate {
   updatedAt           DateTime  @updatedAt @map("updated_at")
   publishedAt         DateTime? @map("published_at")
 
+  auditLogs   TemplateAuditLog[]
+  sendEvents  TemplateSendEvent[]
+
   @@map("email_templates")
+}
+
+/// Reusable email section masters (header/footer/content/social).
+model EmailSavedSection {
+  id          String   @id @default(uuid())
+  name        String
+  role        String
+  sectionData Json     @map("section_data")
+  version     Int      @default(1)
+  createdAt   DateTime @default(now()) @map("created_at")
+  updatedAt   DateTime @updatedAt @map("updated_at")
+
+  @@index([role])
+  @@map("email_saved_sections")
+}
+
+/// Who changed a template (create / update).
+model TemplateAuditLog {
+  id               String   @id @default(uuid())
+  templateId       String   @map("template_id")
+  actorUserId      String   @map("actor_user_id")
+  actorDisplayName String   @map("actor_display_name")
+  action           String
+  revision         Int
+  createdAt        DateTime @default(now()) @map("created_at")
+
+  template EmailTemplate @relation(fields: [templateId], references: [id], onDelete: Cascade)
+
+  @@index([templateId, createdAt])
+  @@map("template_audit_logs")
+}
+
+/// Send/delivery rows for Statistik (local store; Brevo sync later).
+model TemplateSendEvent {
+  id              String   @id @default(uuid())
+  templateId      String   @map("template_id")
+  recipientEmail  String   @map("recipient_email")
+  recipientName   String?  @map("recipient_name")
+  sentAt          DateTime @map("sent_at")
+  status          String   @default("SENT")
+  source          String   @default("LOCAL")
+
+  template EmailTemplate @relation(fields: [templateId], references: [id], onDelete: Cascade)
+
+  @@index([templateId, sentAt])
+  @@map("template_send_events")
 }

@@ -1,9 +1,10 @@
 import { test, expect } from "@playwright/test";
 import path from "node:path";
 import { fileURLToPath } from "node:url";
+import { createTemplateViaModal } from "./helpers/createTemplate";
 
 /**
- * Phase 3 — corporate (Firma) blocks acceptance.
+ * Phase 3 — corporate (Firma) blocks via toolbar Blöcke dropdown.
  * Location: apps/editor/e2e/phase-3-corporate-components.spec.ts
  */
 
@@ -12,15 +13,26 @@ const evidenceDir = path.resolve(
   "../../../.qa/evidence/phase-3-corporate-components",
 );
 
+async function waitForIdleSave(page: import("@playwright/test").Page) {
+  await expect(page.getByText("Gespeichert")).toBeVisible({ timeout: 15_000 });
+  await expect(page.getByText("Speichern…")).toHaveCount(0);
+}
+
 test("firma blocks panel + persist company-header", async ({ page }) => {
   await page.goto("/");
-  await page.getByRole("button", { name: /Neues Template|Erstes Template/ }).click();
-  await expect(page).toHaveURL(/\/templates\/[0-9a-f-]+/);
+  await createTemplateViaModal(page, "Phase 3 Firma");
   await expect(page.locator(".gjs-host")).toBeVisible({ timeout: 15_000 });
 
   await page.waitForFunction(() =>
     Boolean((window as Window & { __emailEditor?: unknown }).__emailEditor),
   );
+
+  await waitForIdleSave(page);
+
+  await page.getByTestId("toolbar-blocks-btn").click();
+  const menu = page.getByTestId("toolbar-blocks-menu");
+  await expect(menu).toBeVisible();
+  await expect(menu.getByText("Firma")).toBeVisible();
 
   const labels = await page.evaluate(() => {
     const ed = (
@@ -77,19 +89,36 @@ test("firma blocks panel + persist company-header", async ({ page }) => {
     fullPage: true,
   });
 
-  await page.evaluate(() => {
-    const ed = (
-      window as Window & {
-        __emailEditor?: {
-          addComponents: (c: unknown) => unknown;
-        };
-      }
-    ).__emailEditor;
-    if (!ed) throw new Error("editor missing");
-    ed.addComponents({ type: "company-header" });
-  });
+  const saveResponse = page.waitForResponse(
+    (r) =>
+      r.request().method() === "PATCH" &&
+      r.url().includes("/api/templates/") &&
+      r.ok(),
+    { timeout: 15_000 },
+  );
+  await menu.locator('[data-block-type="company-header"]').click();
 
-  await expect(page.getByText("Gespeichert")).toBeVisible({ timeout: 15_000 });
+  await expect
+    .poll(async () => {
+      return page.evaluate(() => {
+        const ed = (
+          window as Window & {
+            __emailEditor?: {
+              DomComponents: {
+                getWrapper: () => { findType: (t: string) => unknown[] };
+              };
+            };
+          }
+        ).__emailEditor;
+        if (!ed) return 0;
+        return ed.DomComponents.getWrapper().findType("company-header").length;
+      });
+    })
+    .toBeGreaterThan(0);
+
+  await saveResponse;
+  await waitForIdleSave(page);
+
   await page.screenshot({
     path: path.join(evidenceDir, "02-header-on-canvas.png"),
     fullPage: true,

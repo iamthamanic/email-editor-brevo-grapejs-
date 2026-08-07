@@ -1,6 +1,7 @@
 import { test, expect } from "@playwright/test";
 import path from "node:path";
 import { fileURLToPath } from "node:url";
+import { createTemplateViaModal } from "./helpers/createTemplate";
 
 /**
  * Phase 1 Foundation acceptance — browser happy path + API revision conflict.
@@ -31,8 +32,7 @@ test.describe("Phase 1 Foundation", () => {
     expect(listJson.error).toBeNull();
     expect(Array.isArray(listJson.data)).toBeTruthy();
 
-    await page.getByRole("button", { name: /Neues Template|Erstes Template anlegen/ }).click();
-    await expect(page).toHaveURL(/\/templates\/[0-9a-f-]+/);
+    await createTemplateViaModal(page, "Phase 1 Foundation");
     await expect(page.locator(".gjs-host")).toBeVisible({ timeout: 15_000 });
     await page.screenshot({
       path: path.join(evidenceDir, "02-editor-loaded.png"),
@@ -58,7 +58,9 @@ test.describe("Phase 1 Foundation", () => {
     const url = page.url();
     await page.reload();
     await expect(page.locator(".gjs-host")).toBeVisible({ timeout: 15_000 });
-    await expect(page.getByText("Gespeichert").or(page.getByText("—"))).toBeVisible();
+    await expect(
+      page.getByText("Gespeichert").or(page.getByText("Bereit")).or(page.getByText("—")),
+    ).toBeVisible();
     await page.screenshot({
       path: path.join(evidenceDir, "04-after-reload.png"),
       fullPage: true,

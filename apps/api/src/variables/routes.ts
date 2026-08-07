@@ -25,6 +25,7 @@ export async function registerVariableRoutes(
     const variables = EMAIL_VARIABLES.map((v) => ({
       key: v.key,
       label: v.label,
+      description: v.description,
       group: v.group,
       groupLabel: v.groupLabel,
       expression: toExpression(v.key),

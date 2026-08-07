@@ -5,8 +5,20 @@
  */
 
 import type { Component, Editor } from "grapesjs";
+import { blockMedia } from "./blockIcons.js";
 import { registerCorporateComponents } from "./corporate.js";
+import { registerEmailHeaderComponent } from "./header.js";
 import { sanitizeEmailHtml } from "./html.js";
+import {
+  footerSectionContent,
+  headerSectionContent,
+  registerLayoutComponents,
+  socialSectionContent,
+} from "./layout.js";
+import {
+  isInlineParamDrop,
+  registerEmailParamComponent,
+} from "./param.js";
 import { EMAIL_COMPONENTS } from "./registry.js";
 import { escapeHtml, sanitizeAltText, toPlainText } from "./text.js";
 import {
@@ -16,15 +28,26 @@ import {
 } from "./urls.js";
 
 const PLACEHOLDER_IMG =
-  "https://placehold.co/600x200/eef2f0/5c6b66?text=Bild";
+  "https://placehold.co/600x200/dfecf8/275073?text=Bild";
 
-function columnCell(inner = '<div data-gjs-type="email-text">Spalte</div>'): string {
-  return `<td valign="top" style="padding:8px;vertical-align:top;">${inner}</td>`;
-}
-
-function columnsTable(cols: 1 | 2 | 3): string {
-  const cells = Array.from({ length: cols }, () => columnCell()).join("");
-  return `<table width="100%" cellpadding="0" cellspacing="0" border="0" style="width:100%;border-collapse:collapse;"><tr>${cells}</tr></table>`;
+function columnsSectionContent(cols: 1 | 2 | 3): object {
+  const width = Math.floor(100 / cols);
+  return {
+    type: "email-section",
+    sectionRole: "content",
+    attributes: { "data-role": "content", "data-section-role": "content" },
+    components: [
+      {
+        type: "email-row",
+        components: Array.from({ length: cols }, () => ({
+          type: "email-column",
+          columnWidth: width,
+          attributes: { width: `${width}%` },
+          components: [{ type: "email-text", content: "Spalte" }],
+        })),
+      },
+    ],
+  };
 }
 
 /** Apply plain text as a single textnode — never HTML-parse trait input (F-02). */
@@ -94,7 +117,7 @@ function wireLinkGuards(editor: Editor): void {
     }
   });
 
-  // Prompt-based RTE link action: reject disallowed protocols before insert
+  // Prompt-based RTE link action: edit existing / create / unlink (empty = unlink)
   const rteMod = editor.RichTextEditor;
   const prev = rteMod.get("link");
   rteMod.add("link", {
@@ -102,15 +125,26 @@ function wireLinkGuards(editor: Editor): void {
     attributes: { ...(prev?.attributes ?? {}), title: "Link" },
     result: (rte) => {
       const sel = rte.selection();
-      const selectedText =
-        sel && typeof sel.toString === "function" ? sel.toString().trim() : "";
-      const selected = selectedText || "Link";
+      const anchorNode =
+        sel?.anchorNode?.nodeType === Node.ELEMENT_NODE
+          ? (sel.anchorNode as Element)
+          : sel?.anchorNode?.parentElement ?? null;
+      const existingA = anchorNode?.closest?.("a") ?? null;
+      const currentHref = existingA?.getAttribute("href") ?? "https://";
+
       const input = window.prompt(
-        "Link-URL (https, mailto, tel)",
-        "https://",
+        existingA
+          ? "Link-URL bearbeiten (leer = Link entfernen)"
+          : "Link-URL (https, mailto, tel)",
+        currentHref,
       );
       if (input == null) return;
       const trimmed = input.trim();
+
+      if (!trimmed) {
+        if (existingA) rte.exec("unlink");
+        return;
+      }
       if (!isAllowedLinkUrl(trimmed)) {
         window.alert(
           "Ungültige URL. Erlaubt sind nur http, https, mailto und tel.",
@@ -118,6 +152,15 @@ function wireLinkGuards(editor: Editor): void {
         return;
       }
       const href = sanitizeLinkUrl(trimmed);
+      if (existingA) {
+        existingA.setAttribute("href", href);
+        existingA.setAttribute("target", "_blank");
+        existingA.setAttribute("rel", "noopener noreferrer");
+        return;
+      }
+      const selectedText =
+        sel && typeof sel.toString === "function" ? sel.toString().trim() : "";
+      const selected = selectedText || "Link";
       const label = escapeHtml(toPlainText(selected, "Link"));
       rte.insertHTML(
         `<a href="${href}" target="_blank" rel="noopener noreferrer">${label}</a>`,
@@ -130,39 +173,64 @@ export function registerEmailComponents(editor: Editor): void {
   const domc = editor.DomComponents;
 
   domc.addType("email-text", {
+    extend: "text",
     isComponent: (el) => el.getAttribute?.("data-email-type") === "email-text",
     model: {
       defaults: {
         tagName: "div",
         attributes: { "data-email-type": "email-text" },
-        droppable: false,
+        // Allow param badges / links to be dropped into the block
+        droppable: (src: Component) => isInlineParamDrop(src),
         editable: true,
+        stylable: true,
         style: {
           padding: "8px 16px",
           "font-family": "Arial, Helvetica, sans-serif",
           "font-size": "16px",
-          color: "#14201c",
+          color: "#171717",
           "line-height": "1.5",
         },
         content: "Text hier eingeben…",
+      },
+      init() {
+        // Nested tags must not become their own contenteditable (double caret)
+        const lockKids = () => {
+          const col = this.components() as {
+            forEach?: (cb: (c: Component) => void) => void;
+            models?: Component[];
+          };
+          const apply = (child: Component) => {
+            if (String(child.get("type") ?? "") === "email-param") return;
+            child.set({ editable: false, textable: true });
+          };
+          if (typeof col.forEach === "function") {
+            col.forEach(apply);
+            return;
+          }
+          for (const child of col.models ?? []) apply(child);
+        };
+        lockKids();
+        this.on("change:components", lockKids);
       },
     },
   });
 
   domc.addType("email-heading", {
+    extend: "text",
     isComponent: (el) => el.getAttribute?.("data-email-type") === "email-heading",
     model: {
       defaults: {
         tagName: "h2",
         attributes: { "data-email-type": "email-heading" },
-        droppable: false,
+        droppable: (src: Component) => isInlineParamDrop(src),
         editable: true,
+        stylable: true,
         style: {
           padding: "8px 16px",
           margin: "0",
           "font-family": "Arial, Helvetica, sans-serif",
           "font-size": "24px",
-          color: "#14201c",
+          color: "#171717",
         },
         content: "Überschrift",
       },
@@ -239,13 +307,13 @@ export function registerEmailComponents(editor: Editor): void {
           target: "_blank",
           rel: "noopener noreferrer",
         },
-        droppable: false,
+        droppable: (src: Component) => isInlineParamDrop(src),
         // Canvas RTE can inject markup — prefer trait + textnode for label
         editable: false,
         style: {
           display: "inline-block",
           padding: "12px 24px",
-          "background-color": "#1a5f4a",
+          "background-color": "#275073",
           color: "#ffffff",
           "text-decoration": "none",
           "border-radius": "4px",
@@ -345,59 +413,110 @@ export function registerEmailComponents(editor: Editor): void {
     },
   });
 
-  domc.addType("email-section", {
-    isComponent: (el) => el.getAttribute?.("data-email-type") === "email-section",
+  // Unrecognized Brevo/HTML fragments — preserve, do not drop (I-01)
+  domc.addType("email-legacy-html", {
+    isComponent: (el) =>
+      el.getAttribute?.("data-email-type") === "email-legacy-html",
     model: {
       defaults: {
-        tagName: "table",
-        attributes: {
-          "data-email-type": "email-section",
-          width: "100%",
-          cellpadding: "0",
-          cellspacing: "0",
-          border: "0",
-        },
-        droppable: true,
-        style: {
-          width: "100%",
-          "border-collapse": "collapse",
-          "background-color": "#ffffff",
-        },
-        components: `
-          <tbody>
-            <tr>
-              <td style="padding:16px;" data-gjs-droppable="true">
-                <div data-gjs-type="email-text">Section-Inhalt</div>
-              </td>
-            </tr>
-          </tbody>
-        `,
+        tagName: "div",
+        attributes: { "data-email-type": "email-legacy-html" },
+        droppable: false,
+        editable: false,
+        stylable: false,
+        content: "",
+        traits: [
+          {
+            type: "text",
+            name: "content",
+            label: "HTML (Legacy)",
+            changeProp: true,
+          },
+        ],
+      },
+      init() {
+        this.on("change:content", () => {
+          const raw = String(this.get("content") ?? "");
+          const safe = sanitizeEmailHtml(raw);
+          if (safe !== raw) {
+            this.set("content", safe, { silent: true });
+          }
+          const el = this.getEl();
+          if (el) el.innerHTML = String(this.get("content") ?? "");
+        });
+      },
+      toHTML() {
+        return sanitizeEmailHtml(String(this.get("content") ?? ""));
+      },
+    },
+    view: {
+      onRender({ el, model }) {
+        el.innerHTML = sanitizeEmailHtml(String(model.get("content") ?? ""));
+        el.setAttribute("data-legacy", "1");
       },
     },
   });
 
+  registerLayoutComponents(editor);
+
+  // Legacy multi-column wrappers (old imports) — still recognized
   for (const cols of [1, 2, 3] as const) {
     const type = `email-columns-${cols}`;
+    const width = Math.floor(100 / cols);
     domc.addType(type, {
       isComponent: (el) => el.getAttribute?.("data-email-type") === type,
       model: {
         defaults: {
-          tagName: "div",
-          attributes: { "data-email-type": type },
+          tagName: "table",
+          name: `${cols} Spalten`,
+          attributes: {
+            "data-email-type": type,
+            width: "100%",
+            cellpadding: "0",
+            cellspacing: "0",
+            border: "0",
+          },
           droppable: false,
-          components: columnsTable(cols),
+          components: [
+            {
+              type: "email-row",
+              components: Array.from({ length: cols }, () => ({
+                type: "email-column",
+                columnWidth: width,
+                attributes: { width: `${width}%` },
+                components: [{ type: "email-text", content: "Spalte" }],
+              })),
+            },
+          ],
         },
       },
     });
   }
 
+  registerEmailParamComponent(editor);
   wireLinkGuards(editor);
+  // Legacy composite — still loadable; new imports use email-section role=header
+  registerEmailHeaderComponent(editor);
   registerCorporateComponents(editor);
 
   const bm = editor.BlockManager;
   bm.getAll().reset();
 
   for (const def of EMAIL_COMPONENTS) {
+    let content: object = { type: def.type };
+    if (def.type === "email-section-header") content = headerSectionContent();
+    else if (def.type === "email-section-footer") content = footerSectionContent();
+    else if (def.type === "email-section-social") content = socialSectionContent();
+    else if (def.type === "email-section") {
+      content = {
+        type: "email-section",
+        sectionRole: "content",
+        attributes: { "data-role": "content", "data-section-role": "content" },
+      };
+    } else if (def.type === "email-columns-1") content = columnsSectionContent(1);
+    else if (def.type === "email-columns-2") content = columnsSectionContent(2);
+    else if (def.type === "email-columns-3") content = columnsSectionContent(3);
+
     bm.add(def.type, {
       label: def.label,
       category: {
@@ -405,8 +524,8 @@ export function registerEmailComponents(editor: Editor): void {
         label: def.categoryLabel,
         open: def.category === "content",
       },
-      content: { type: def.type },
-      media: `<div style="padding:8px;font-size:12px;text-align:center;">${def.label}</div>`,
+      content: content as { type: string },
+      media: blockMedia(def.type, def.label),
     });
   }
 }

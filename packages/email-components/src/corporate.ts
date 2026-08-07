@@ -85,10 +85,26 @@ function contactHtml(
   phoneHref: string,
   phoneLabel: string,
   website: string,
+  logoSrc?: string,
+  companyName?: string,
+  addressLine?: string,
 ): string {
+  const logo =
+    logoSrc && logoSrc.trim()
+      ? `<img src="${escapeHtml(sanitizeImageUrl(logoSrc, ""))}" alt="${escapeHtml(companyName || "Logo")}" width="64" style="display:block;max-width:64px;height:auto;border:0;margin:0 0 12px 0;" /><br/>`
+      : "";
+  const name =
+    companyName && companyName.trim()
+      ? `<strong style="color:${EMAIL_COLORS.text};">${escapeHtml(companyName)}</strong><br/>`
+      : "";
+  const address =
+    addressLine && addressLine.trim()
+      ? `${escapeHtml(addressLine)}<br/>`
+      : "";
   return `
     <tr>
       <td style="padding:16px;font-family:${FONT};font-size:14px;color:${EMAIL_COLORS.text};line-height:1.6;">
+        ${logo}${name}${address}
         <a href="${escapeHtml(emailHref)}" style="color:${EMAIL_COLORS.primary};text-decoration:none;">${escapeHtml(emailLabel)}</a><br/>
         <a href="${escapeHtml(phoneHref)}" style="color:${EMAIL_COLORS.primary};text-decoration:none;">${escapeHtml(phoneLabel)}</a><br/>
         <a href="${escapeHtml(website)}" style="color:${EMAIL_COLORS.primary};text-decoration:underline;">${escapeHtml(website)}</a>
@@ -110,6 +126,56 @@ function socialHtml(linkedin: string, xUrl: string, website: string): string {
       </td>
     </tr>
   `;
+}
+
+type SocialIconItem = {
+  network?: string;
+  href: string;
+  imageSrc?: string;
+  label?: string;
+};
+
+function socialIconsHtml(items: SocialIconItem[]): string {
+  const icons = items
+    .map((item) => {
+      const href = sanitizeLinkUrl(item.href, "#");
+      const label = escapeHtml(item.label || item.network || "Social");
+      const img = item.imageSrc
+        ? `<img src="${escapeHtml(sanitizeImageUrl(item.imageSrc, ""))}" alt="${label}" width="32" height="32" style="display:inline-block;border:0;" />`
+        : label;
+      return `<a href="${escapeHtml(href)}" target="_blank" rel="noopener noreferrer" style="display:inline-block;margin:0 6px;">${img}</a>`;
+    })
+    .join("");
+  return `
+    <tr>
+      <td style="padding:16px;text-align:center;">
+        ${icons}
+      </td>
+    </tr>
+  `;
+}
+
+function parseSocialItems(raw: unknown): SocialIconItem[] | null {
+  if (typeof raw !== "string" || !raw.trim()) return null;
+  try {
+    const parsed: unknown = JSON.parse(raw);
+    if (!Array.isArray(parsed) || parsed.length === 0) return null;
+    const items: SocialIconItem[] = [];
+    for (const row of parsed) {
+      if (!row || typeof row !== "object") continue;
+      const href = String((row as { href?: unknown }).href ?? "").trim();
+      if (!href) continue;
+      items.push({
+        network: String((row as { network?: unknown }).network ?? ""),
+        href,
+        imageSrc: String((row as { imageSrc?: unknown }).imageSrc ?? "") || undefined,
+        label: String((row as { label?: unknown }).label ?? "") || undefined,
+      });
+    }
+    return items.length ? items : null;
+  } catch {
+    return null;
+  }
 }
 
 function tableShell(
@@ -327,8 +393,15 @@ export function registerCorporateComponents(editor: Editor): void {
         email: BRAND_DEFAULTS.emailLabel,
         phone: BRAND_DEFAULTS.phoneLabel,
         website: BRAND_DEFAULTS.website,
+        // Empty by default — do NOT inject brand logo (avoids footer duplicates)
+        logoSrc: "",
+        companyName: "",
+        addressLine: "",
         variant: BRAND_DEFAULTS.variant,
         traits: [
+          { type: "text", name: "logoSrc", label: "Logo-URL", changeProp: true },
+          { type: "text", name: "companyName", label: "Firmenname", changeProp: true },
+          { type: "text", name: "addressLine", label: "Adresse", changeProp: true },
           { type: "text", name: "email", label: "E-Mail", changeProp: true },
           { type: "text", name: "phone", label: "Telefon", changeProp: true },
           { type: "text", name: "website", label: "Website", changeProp: true },
@@ -354,14 +427,41 @@ export function registerCorporateComponents(editor: Editor): void {
             phoneRaw.replace(/^tel:/i, ""),
             BRAND_DEFAULTS.phoneLabel,
           );
+          const logoRaw = String(this.get("logoSrc") ?? "").trim();
+          const logoSrc = logoRaw
+            ? sanitizeImageUrl(logoRaw, "")
+            : "";
+          const companyName = toPlainText(
+            String(this.get("companyName") ?? ""),
+            "",
+          );
+          const addressLine = toPlainText(
+            String(this.get("addressLine") ?? ""),
+            "",
+          );
           this.set("website", website, { silent: true });
+          if (logoSrc !== logoRaw) {
+            this.set("logoSrc", logoSrc, { silent: true });
+          }
           setShellHtml(
             this,
-            `<tbody>${contactHtml(emailHref, emailLabel, phoneHref, phoneLabel, website)}</tbody>`,
+            `<tbody>${contactHtml(
+              emailHref,
+              emailLabel,
+              phoneHref,
+              phoneLabel,
+              website,
+              logoSrc || undefined,
+              companyName || undefined,
+              addressLine || undefined,
+            )}</tbody>`,
           );
         };
         rebuild();
-        this.on("change:email change:phone change:website change:variant", rebuild);
+        this.on(
+          "change:email change:phone change:website change:logoSrc change:companyName change:addressLine change:variant",
+          rebuild,
+        );
       },
     },
   });
@@ -394,6 +494,12 @@ export function registerCorporateComponents(editor: Editor): void {
       init() {
         const rebuild = () => {
           ensureDefaultVariant(this);
+          const attrs = this.getAttributes() as Record<string, string>;
+          const iconItems = parseSocialItems(attrs["data-social-items"]);
+          if (iconItems) {
+            setShellHtml(this, `<tbody>${socialIconsHtml(iconItems)}</tbody>`);
+            return;
+          }
           const linkedinUrl = sanitizeLinkUrl(
             String(this.get("linkedinUrl") ?? ""),
             BRAND_DEFAULTS.linkedinUrl,
@@ -416,7 +522,7 @@ export function registerCorporateComponents(editor: Editor): void {
         };
         rebuild();
         this.on(
-          "change:linkedinUrl change:xUrl change:websiteUrl change:variant",
+          "change:linkedinUrl change:xUrl change:websiteUrl change:variant change:attributes:data-social-items",
           rebuild,
         );
       },

@@ -4,34 +4,33 @@
  */
 
 import type {
-  ApiResponse,
+  BrevoSyncResultDto,
+  ConvertTemplateResultDto,
   CreateTemplateBody,
   EmailTemplateDto,
   EmailTemplateListItem,
   PatchTemplateBody,
+  TemplateInsightsDto,
 } from "@email-template/email-schema";
-
-async function parseResponse<T>(response: Response): Promise<T> {
-  const body = (await response.json()) as ApiResponse<T>;
-  if (!response.ok || body.error || body.data === null) {
-    const message = body.error?.message ?? `Request failed (${response.status})`;
-    const code = body.error?.code ?? "REQUEST_FAILED";
-    const error = new Error(message) as Error & { code?: string; status?: number };
-    error.code = code;
-    error.status = response.status;
-    throw error;
-  }
-  return body.data;
-}
+import { parseApiResponse } from "./parseApiResponse";
 
 export async function fetchTemplates(): Promise<EmailTemplateListItem[]> {
   const response = await fetch("/api/templates");
-  return parseResponse(response);
+  return parseApiResponse(response);
+}
+
+export async function syncBrevoTemplates(): Promise<BrevoSyncResultDto> {
+  const response = await fetch("/api/templates/sync-brevo", {
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
+    body: "{}",
+  });
+  return parseApiResponse(response);
 }
 
 export async function fetchTemplate(id: string): Promise<EmailTemplateDto> {
   const response = await fetch(`/api/templates/${id}`);
-  return parseResponse(response);
+  return parseApiResponse(response);
 }
 
 export async function createTemplate(
@@ -42,7 +41,7 @@ export async function createTemplate(
     headers: { "Content-Type": "application/json" },
     body: JSON.stringify(body),
   });
-  return parseResponse(response);
+  return parseApiResponse(response);
 }
 
 export async function patchTemplate(
@@ -54,5 +53,35 @@ export async function patchTemplate(
     headers: { "Content-Type": "application/json" },
     body: JSON.stringify(body),
   });
-  return parseResponse(response);
+  return parseApiResponse(response);
+}
+
+export async function convertTemplate(
+  id: string,
+  body?: { force?: boolean; html?: string },
+): Promise<ConvertTemplateResultDto> {
+  const response = await fetch(`/api/templates/${id}/convert`, {
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify(body ?? {}),
+  });
+  return parseApiResponse(response);
+}
+
+export async function deleteTemplate(id: string): Promise<{ id: string }> {
+  const response = await fetch(`/api/templates/${id}`, {
+    method: "DELETE",
+  });
+  return parseApiResponse(response);
+}
+
+export async function fetchTemplateInsights(
+  id: string,
+): Promise<TemplateInsightsDto> {
+  const response = await fetch(`/api/templates/${id}/insights`);
+  return parseApiResponse(response);
+}
+
+export function templateStatisticsCsvUrl(id: string): string {
+  return `/api/templates/${id}/statistics.csv`;
 }

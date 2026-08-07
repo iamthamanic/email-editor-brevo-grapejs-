@@ -1,9 +1,10 @@
 import { test, expect } from "@playwright/test";
 import path from "node:path";
 import { fileURLToPath } from "node:url";
+import { createTemplateViaModal } from "./helpers/createTemplate";
 
 /**
- * Phase 4 — variables picker + sample preview.
+ * Phase 4 — variables picker (toolbar dropdown) + sample preview.
  * Location: apps/editor/e2e/phase-4-variables.spec.ts
  */
 
@@ -16,15 +17,22 @@ test("variable picker inserts params expression and sample preview", async ({
   page,
 }) => {
   await page.goto("/");
-  await page.getByRole("button", { name: /Neues Template|Erstes Template/ }).click();
-  await expect(page).toHaveURL(/\/templates\/[0-9a-f-]+/);
+  await createTemplateViaModal(page, "Phase 4 Vars");
   await expect(page.locator(".gjs-host")).toBeVisible({ timeout: 15_000 });
 
   await page.waitForFunction(() =>
     Boolean((window as Window & { __emailEditor?: unknown }).__emailEditor),
   );
 
-  const picker = page.getByTestId("variable-picker");
+  await expect(page.getByTestId("editor-toolbar")).toBeVisible();
+  await expect(page.getByTestId("toolbar-variables-btn")).toBeVisible();
+  await expect(page.getByTestId("toolbar-blocks-btn")).toBeVisible();
+
+  await page.getByTestId("toolbar-variables-btn").click();
+  const menu = page.getByTestId("toolbar-variables-menu");
+  await expect(menu).toBeVisible();
+
+  const picker = menu.getByTestId("variable-picker");
   await expect(picker).toBeVisible();
   await expect(picker.getByRole("heading", { name: "Kunde" })).toBeVisible();
   await expect(picker.getByRole("heading", { name: "Auftrag" })).toBeVisible();
@@ -40,7 +48,9 @@ test("variable picker inserts params expression and sample preview", async ({
       window as Window & {
         __emailEditor?: {
           addComponents: (c: unknown) => unknown;
-          getWrapper: () => { find: (s: string) => { at: (i: number) => unknown } };
+          getWrapper: () => {
+            find: (s: string) => { at: (i: number) => unknown };
+          };
           select: (c: unknown) => void;
         };
       }
@@ -54,6 +64,10 @@ test("variable picker inserts params expression and sample preview", async ({
     ed.select(comp);
   });
 
+  // Re-open if closed by canvas focus; then pick Vorname
+  if (!(await menu.isVisible())) {
+    await page.getByTestId("toolbar-variables-btn").click();
+  }
   await page.locator('[data-variable-key="vorname"]').click();
 
   const htmlAfter = await page.evaluate(() => {
@@ -69,6 +83,7 @@ test("variable picker inserts params expression and sample preview", async ({
     fullPage: true,
   });
 
+  await page.getByRole("button", { name: "Vorschau" }).click();
   await page.getByLabel("Beispieldaten").check();
   const frame = page.locator(".sample-preview-frame");
   await expect(frame).toBeVisible({ timeout: 10_000 });
@@ -82,7 +97,7 @@ test("variable picker inserts params expression and sample preview", async ({
   const projectStillHasTag = await page.evaluate(() => {
     const ed = (
       window as Window & {
-        __emailEditor?: { getProjectData: () => unknown; getHtml: () => string };
+        __emailEditor?: { getHtml: () => string };
       }
     ).__emailEditor;
     return ed?.getHtml().includes("{{ params.vorname }}") ?? false;

@@ -38,9 +38,19 @@ describe("EMAIL_VARIABLES", () => {
       "rechnungsnummer",
       "mahnung",
       "gesamtbetrag",
+      "adresse",
+      "datum.vier.tage.vor.ablauf",
+      "detaillierte.angaben",
     ]) {
       assert.ok(keys.includes(required), `missing ${required}`);
     }
+  });
+
+  it("exposes Angezeigte Informationen descriptions", () => {
+    const bestell = EMAIL_VARIABLES.find((v) => v.key === "bestellnummer");
+    assert.ok(bestell?.description.includes("Bestellnummer"));
+    const name = EMAIL_VARIABLES.find((v) => v.key === "name");
+    assert.ok(name?.description.includes("Nachname"));
   });
 });
 
@@ -76,6 +86,13 @@ describe("extractParamKeys / isKnownVariableKey", () => {
   it("extracts keys from html", () => {
     const keys = extractParamKeys("a {{ params.email }} b {{ params.vorname }}");
     assert.deepEqual(keys.sort(), ["email", "vorname"]);
+  });
+
+  it("extracts nested paths", () => {
+    const keys = extractParamKeys(
+      "{{ params.a.b }} {{params.datum.vier.tage}}",
+    );
+    assert.deepEqual(keys.sort(), ["a.b", "datum.vier.tage"]);
   });
 
   it("knows registry keys only", () => {

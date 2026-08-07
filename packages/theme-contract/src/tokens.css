@@ -1,24 +1,60 @@
 /**
  * Theme Contract CSS custom properties for editor chrome.
- * Location: packages/theme-contract — ERP may override via host injection later.
+ * Location: packages/theme-contract — defaults mirror HVAI-123 light Ant Design theme;
+ * ERP host may override via iframe postMessage / React props later.
+ *
+ * Source (read-only): core/src/frontend/src/themes/light_theme/index.tsx
  */
 :root {
-  --erp-font-family: "IBM Plex Sans", "Segoe UI", sans-serif;
+  /* Ant Design default stack (HVAI fontFamily is custom/"regular"; system stack embeds cleanly) */
+  --erp-font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue",
+    Arial, "Noto Sans", sans-serif, "Apple Color Emoji", "Segoe UI Emoji";
   --erp-font-size-base: 14px;
 
-  --erp-color-primary: #1a5f4a;
-  --erp-color-background: #eef2f0;
+  --erp-color-primary: #275073;
+  --erp-color-primary-hover: #1e3f5a;
+  --erp-color-primary-soft: #dfecf8;
+  --erp-color-primary-muted: #b6d4ed;
+
+  --erp-color-background: #fafafa;
   --erp-color-surface: #ffffff;
-  --erp-color-border: #c5d0cb;
+  --erp-color-canvas: #f5f5f5;
+  --erp-color-border: #f0f0f0;
+  --erp-color-border-strong: rgba(39, 80, 115, 0.3);
 
-  --erp-color-text: #14201c;
-  --erp-color-text-muted: #5c6b66;
+  --erp-color-text: #171717;
+  --erp-color-text-muted: #275073;
+  --erp-color-text-inverse: #ffffff;
 
-  --erp-radius-small: 4px;
+  /* HVAI Layout.headerBg */
+  --erp-color-header: rgb(80, 123, 164);
+  --erp-color-header-text: #ffffff;
+
+  --erp-color-error: #ff4d4f;
+  --erp-color-error-bg: #fff2f0;
+  --erp-color-success: #52c41a;
+
+  --erp-radius-small: 5px;
   --erp-radius-medium: 8px;
 
   --erp-spacing-xs: 4px;
   --erp-spacing-sm: 8px;
   --erp-spacing-md: 16px;
   --erp-spacing-lg: 24px;
+
+  /*
+   * GrapesJS theme hooks — naming is inverted vs Ant/ERP:
+   * --gjs-primary-color = panel BACKGROUND (not brand primary).
+   * Mapping brand #275073 here painted dark chrome with unreadable labels.
+   */
+  --gjs-primary-color: var(--erp-color-surface);
+  --gjs-secondary-color: var(--erp-color-text);
+  --gjs-tertiary-color: var(--erp-color-canvas);
+  --gjs-quaternary-color: var(--erp-color-primary);
+  --gjs-font-color: var(--erp-color-text);
+  --gjs-font-color-active: var(--erp-color-text);
+  --gjs-main-color: var(--erp-color-surface);
+  --gjs-main-dark-color: var(--erp-color-canvas);
+  --gjs-light-color: var(--erp-color-border-strong);
+  --gjs-color-blue: var(--erp-color-primary);
 }

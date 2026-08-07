@@ -1,0 +1,68 @@
+<!DOCTYPE html>
+<html>
+<head><title>Sibling section tables (real Brevo shape)</title></head>
+<body>
+<!-- Real Brevo: 100% → 600 (1 row) → sibling modular section tables -->
+<table class="nl2go-body-table" width="100%" cellpadding="0" cellspacing="0" border="0">
+  <tr>
+    <td align="center">
+      <table width="600" align="center" cellpadding="0" cellspacing="0" border="0" style="width:600px;">
+        <tr>
+          <td>
+            <!-- Header -->
+            <table width="100%" align="center" cellpadding="0" cellspacing="0"><tr><td align="center">
+              <img src="https://img.mailinblue.com/logo-full.png" alt="Logo" width="160" />
+            </td></tr></table>
+            <!-- Main -->
+            <table width="100%" align="center" cellpadding="0" cellspacing="0"><tr><td>
+              <div>
+                <p>Sehr geehrte/r {{ params.anrede }} {{ params.name }},</p>
+                <p>hiermit bestätigen wir den Auftrag {{ params.bestellnummer }}.</p>
+                <p>Adresse: {{ params.adresse }}, {{ params.plz }} {{ params.stadt }}</p>
+              </div>
+            </td></tr></table>
+            <!-- Portal -->
+            <table width="100%" align="center" cellpadding="0" cellspacing="0"><tr><td>
+              <div>
+                <p><strong>Wussten Sie schon?</strong></p>
+                <p>In unserem <a href="https://portal.halteverbot123.de">Kundenportal</a>.</p>
+              </div>
+            </td></tr></table>
+            <!-- Footer company + cert (single cell stack — common in Brevo) -->
+            <table width="100%" align="center" cellpadding="0" cellspacing="0"><tr><td>
+              <img src="https://img.mailinblue.com/co-logo.png" alt="Firma" width="64" />
+              <div>
+                <p><strong>Browo GmbH</strong></p>
+                <p>Späthstraße 144, 12359 Berlin</p>
+                <p><a href="tel:+493062735160">030-627 35 160</a></p>
+                <p><a href="https://www.halteverbot123.de">www.halteverbot123.de</a></p>
+                <p><a href="mailto:info@halteverbot123.de">info@halteverbot123.de</a></p>
+              </div>
+              <img src="https://img.mailinblue.com/certs.png" alt="Zertifikate" width="120" />
+            </td></tr></table>
+            <!-- Social (nested icon tables like Brevo) -->
+            <table width="100%" align="center" cellpadding="0" cellspacing="0"><tr><td align="center">
+              <table align="center"><tr><td>
+                <a href="https://www.tiktok.com/@example"><img src="https://cdn.example/tiktok_32px.png" alt="TikTok" width="32" /></a>
+              </td></tr></table>
+              <table align="center"><tr><td>
+                <a href="https://www.linkedin.com/company/example"><img src="https://cdn.example/linkedin_32px.png" alt="LinkedIn" width="32" /></a>
+              </td></tr></table>
+              <table align="center"><tr><td>
+                <a href="https://www.instagram.com/example"><img src="https://cdn.example/instagram_32px.png" alt="Instagram" width="32" /></a>
+              </td></tr></table>
+              <table align="center"><tr><td>
+                <a href="https://www.facebook.com/example"><img src="https://cdn.example/facebook_32px.png" alt="Facebook" width="32" /></a>
+              </td></tr></table>
+              <table align="center"><tr><td>
+                <a href="https://www.youtube.com/@example"><img src="https://cdn.example/youtube_32px.png" alt="YouTube" width="32" /></a>
+              </td></tr></table>
+            </td></tr></table>
+          </td>
+        </tr>
+      </table>
+    </td>
+  </tr>
+</table>
+</body>
+</html>

@@ -15,3 +15,12 @@ export {
 } from "./urls.js";
 export { escapeHtml, sanitizeAltText, toPlainText } from "./text.js";
 export { sanitizeEmailHtml } from "./html.js";
+export {
+  buildEmailParamComponent,
+  isInlineParamDrop,
+} from "./param.js";
+export {
+  footerSectionContent,
+  headerSectionContent,
+  socialSectionContent,
+} from "./layout.js";

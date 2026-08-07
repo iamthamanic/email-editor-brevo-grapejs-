@@ -1,9 +1,10 @@
 import { test, expect } from "@playwright/test";
 import path from "node:path";
 import { fileURLToPath } from "node:url";
+import { createTemplateViaModal } from "./helpers/createTemplate";
 
 /**
- * Phase 2 — email block library acceptance.
+ * Phase 2 — email block library acceptance (toolbar Blöcke dropdown).
  * Location: apps/editor/e2e/phase-2-email-components.spec.ts
  */
 
@@ -12,22 +13,29 @@ const evidenceDir = path.resolve(
   "../../../.qa/evidence/phase-2-email-components",
 );
 
+async function waitForIdleSave(page: import("@playwright/test").Page) {
+  await expect(page.locator(".ed-save-pill")).toHaveText("Gespeichert", {
+    timeout: 15_000,
+  });
+  await expect(page.getByText("Speichern…")).toHaveCount(0);
+}
+
 test("email blocks panel + persist button component", async ({ page }) => {
   await page.goto("/");
-  await page.getByRole("button", { name: /Neues Template|Erstes Template/ }).click();
-  await expect(page).toHaveURL(/\/templates\/[0-9a-f-]+/);
+  await createTemplateViaModal(page, "Phase 2 Blocks");
   await expect(page.locator(".gjs-host")).toBeVisible({ timeout: 15_000 });
 
-  await page.waitForFunction(() => Boolean((window as Window & { __emailEditor?: unknown }).__emailEditor));
+  await page.waitForFunction(() =>
+    Boolean((window as Window & { __emailEditor?: unknown }).__emailEditor),
+  );
 
-  // Open blocks panel (last toolbar icon typically)
-  const blocksBtn = page.locator(".gjs-pn-btn").filter({ has: page.locator(".fa-th-large, .fa-cubes, [class*='blocks']") }).first();
-  if (await blocksBtn.count()) {
-    await blocksBtn.click();
-  } else {
-    // Fallback: click blocks manager panel button by title/aria
-    await page.locator('.gjs-pn-views-container, .gjs-blocks-c, [class*="gjs-block"]').first().waitFor({ state: "attached", timeout: 5000 }).catch(() => undefined);
-  }
+  await waitForIdleSave(page);
+
+  await page.getByTestId("toolbar-blocks-btn").click();
+  const menu = page.getByTestId("toolbar-blocks-menu");
+  await expect(menu).toBeVisible();
+  await expect(menu.getByText("Inhalt")).toBeVisible();
+  await expect(menu.getByText("Layout")).toBeVisible();
 
   await page.screenshot({
     path: path.join(evidenceDir, "01-blocks-panel.png"),
@@ -35,11 +43,17 @@ test("email blocks panel + persist button component", async ({ page }) => {
   });
 
   const labels = await page.evaluate(() => {
-    const ed = (window as Window & {
-      __emailEditor?: {
-        BlockManager: { getAll: () => { models?: Array<{ get: (k: string) => unknown }> } | Array<{ get: (k: string) => unknown }> };
-      };
-    }).__emailEditor;
+    const ed = (
+      window as Window & {
+        __emailEditor?: {
+          BlockManager: {
+            getAll: () =>
+              | { models?: Array<{ get: (k: string) => unknown }> }
+              | Array<{ get: (k: string) => unknown }>;
+          };
+        };
+      }
+    ).__emailEditor;
     if (!ed) return [];
     const all = ed.BlockManager.getAll();
     const models = Array.isArray(all) ? all : (all.models ?? []);
@@ -47,36 +61,72 @@ test("email blocks panel + persist button component", async ({ page }) => {
   });
 
   expect(labels).toEqual(
-    expect.arrayContaining(["Text", "Überschrift", "Bild", "Button", "Trennlinie", "Abstand", "Section", "1 Spalte", "2 Spalten", "3 Spalten"]),
+    expect.arrayContaining([
+      "Text",
+      "Überschrift",
+      "Bild",
+      "Button",
+      "Trennlinie",
+      "Abstand",
+      "Bereich",
+      "Header",
+      "Footer",
+      "1 Spalte",
+      "2 Spalten",
+      "3 Spalten",
+    ]),
   );
 
-  await page.evaluate(() => {
-    const ed = (window as Window & {
-      __emailEditor?: {
-        addComponents: (c: unknown) => unknown;
-        getWrapper: () => { append: (c: unknown) => unknown };
-      };
-    }).__emailEditor;
-    if (!ed) throw new Error("editor missing");
-    ed.addComponents({ type: "email-button" });
-  });
+  const saveResponse = page.waitForResponse(
+    (r) =>
+      r.request().method() === "PATCH" &&
+      r.url().includes("/api/templates/") &&
+      r.ok(),
+    { timeout: 15_000 },
+  );
+  await menu.locator('[data-block-type="email-button"]').click();
 
-  await expect(page.getByText("Gespeichert")).toBeVisible({ timeout: 15_000 });
+  await expect
+    .poll(async () => {
+      return page.evaluate(() => {
+        const ed = (
+          window as Window & {
+            __emailEditor?: {
+              DomComponents: {
+                getWrapper: () => { findType: (t: string) => unknown[] };
+              };
+            };
+          }
+        ).__emailEditor;
+        if (!ed) return 0;
+        return ed.DomComponents.getWrapper().findType("email-button").length;
+      });
+    })
+    .toBeGreaterThan(0);
+
+  await saveResponse;
+  await waitForIdleSave(page);
+
   await page.screenshot({
     path: path.join(evidenceDir, "02-button-on-canvas.png"),
     fullPage: true,
   });
 
   await page.reload();
-  await page.waitForFunction(() => Boolean((window as Window & { __emailEditor?: unknown }).__emailEditor));
+  await page.waitForFunction(() =>
+    Boolean((window as Window & { __emailEditor?: unknown }).__emailEditor),
+  );
 
   const hasButton = await page.evaluate(() => {
-    const ed = (window as Window & {
-      __emailEditor?: {
-        getWrapper: () => { find: (s: string) => { length: number } };
-        DomComponents: { getWrapper: () => { findType: (t: string) => unknown[] } };
-      };
-    }).__emailEditor;
+    const ed = (
+      window as Window & {
+        __emailEditor?: {
+          DomComponents: {
+            getWrapper: () => { findType: (t: string) => unknown[] };
+          };
+        };
+      }
+    ).__emailEditor;
     if (!ed) return false;
     const found = ed.DomComponents.getWrapper().findType("email-button");
     return Array.isArray(found) && found.length > 0;

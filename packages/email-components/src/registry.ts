@@ -3,7 +3,7 @@
  * Location: packages/email-components/src/registry.ts
  */
 
-export type BlockCategory = "content" | "layout" | "corporate";
+export type BlockCategory = "content" | "layout" | "sections" | "corporate";
 
 export interface EmailComponentDef {
   type: string;
@@ -30,10 +30,34 @@ export const EMAIL_COMPONENTS: readonly EmailComponentDef[] = [
   },
   { type: "email-spacer", label: "Abstand", category: "content", categoryLabel: "Inhalt" },
   {
+    type: "company-social",
+    label: "Social",
+    category: "content",
+    categoryLabel: "Inhalt",
+  },
+  {
     type: "email-section",
-    label: "Section",
-    category: "layout",
-    categoryLabel: "Layout",
+    label: "Bereich",
+    category: "sections",
+    categoryLabel: "Bereiche",
+  },
+  {
+    type: "email-section-header",
+    label: "Header",
+    category: "sections",
+    categoryLabel: "Bereiche",
+  },
+  {
+    type: "email-section-footer",
+    label: "Footer",
+    category: "sections",
+    categoryLabel: "Bereiche",
+  },
+  {
+    type: "email-section-social",
+    label: "Social Media",
+    category: "sections",
+    categoryLabel: "Bereiche",
   },
   {
     type: "email-columns-1",
@@ -53,35 +77,12 @@ export const EMAIL_COMPONENTS: readonly EmailComponentDef[] = [
     category: "layout",
     categoryLabel: "Layout",
   },
-  {
-    type: "company-header",
-    label: "Header",
-    category: "corporate",
-    categoryLabel: "Firma",
-  },
-  {
-    type: "company-footer",
-    label: "Footer",
-    category: "corporate",
-    categoryLabel: "Firma",
-  },
+  // Legacy corporate shells — still available for old templates
   {
     type: "company-legal",
     label: "Legal",
     category: "corporate",
-    categoryLabel: "Firma",
-  },
-  {
-    type: "company-contact",
-    label: "Kontakt",
-    category: "corporate",
-    categoryLabel: "Firma",
-  },
-  {
-    type: "company-social",
-    label: "Social",
-    category: "corporate",
-    categoryLabel: "Firma",
+    categoryLabel: "Firma (Legacy)",
   },
 ] as const;
 

@@ -3,13 +3,15 @@
  * Location: apps/api/src/index.ts
  */
 
-import "dotenv/config";
+import "./loadEnv.js";
+
 import Fastify from "fastify";
 import {
   assertSafeDevBind,
   authHook,
   getAuthMode,
 } from "./auth/dev-auth.js";
+import { registerSavedSectionRoutes } from "./saved-sections/routes.js";
 import { registerTemplateRoutes } from "./templates/routes.js";
 import { registerVariableRoutes } from "./variables/routes.js";
 
@@ -24,7 +26,7 @@ async function main(): Promise<void> {
 
   app.addHook("onRequest", async (request, reply) => {
     reply.header("Access-Control-Allow-Origin", EDITOR_ORIGIN);
-    reply.header("Access-Control-Allow-Methods", "GET,POST,PATCH,OPTIONS");
+    reply.header("Access-Control-Allow-Methods", "GET,POST,PATCH,DELETE,OPTIONS");
     reply.header("Access-Control-Allow-Headers", "Content-Type");
     if (request.method === "OPTIONS") {
       return reply.code(204).send();
@@ -43,6 +45,7 @@ async function main(): Promise<void> {
 
   await registerTemplateRoutes(app);
   await registerVariableRoutes(app);
+  await registerSavedSectionRoutes(app);
 
   await app.listen({ port: PORT, host: HOST });
   console.info(

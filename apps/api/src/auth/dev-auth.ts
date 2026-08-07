@@ -27,6 +27,7 @@ const DEV_PERMISSIONS: Permission[] = [
   "email_templates.publish",
   "email_templates.delete",
   "email_templates.manage_components",
+  "email_templates.manage_saved_sections",
   "email_templates.raw_html",
 ];
 

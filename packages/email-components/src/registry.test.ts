@@ -9,7 +9,7 @@ import { BRAND_DEFAULTS } from "./brandDefaults.js";
 import { EMAIL_COMPONENTS, listComponentTypes } from "./registry.js";
 
 describe("EMAIL_COMPONENTS registry", () => {
-  it("includes required Phase 2 types", () => {
+  it("includes required content + layout + section types", () => {
     const types = listComponentTypes();
     for (const required of [
       "email-text",
@@ -19,32 +19,29 @@ describe("EMAIL_COMPONENTS registry", () => {
       "email-divider",
       "email-spacer",
       "email-section",
+      "email-section-header",
+      "email-section-footer",
       "email-columns-1",
       "email-columns-2",
       "email-columns-3",
-    ]) {
-      assert.ok(types.includes(required), `missing ${required}`);
-    }
-  });
-
-  it("includes Phase 3 corporate types", () => {
-    const types = listComponentTypes();
-    for (const required of [
-      "company-header",
-      "company-footer",
-      "company-legal",
-      "company-contact",
       "company-social",
     ]) {
       assert.ok(types.includes(required), `missing ${required}`);
     }
   });
 
+  it("does not expose legacy monolith header/footer as palette types", () => {
+    const types = listComponentTypes();
+    assert.equal(types.includes("email-header"), false);
+    assert.equal(types.includes("company-header"), false);
+    assert.equal(types.includes("company-footer"), false);
+  });
+
   it("uses DE category labels", () => {
     const labels = new Set(EMAIL_COMPONENTS.map((c) => c.categoryLabel));
     assert.ok(labels.has("Inhalt"));
     assert.ok(labels.has("Layout"));
-    assert.ok(labels.has("Firma"));
+    assert.ok(labels.has("Bereiche"));
   });
 });
 

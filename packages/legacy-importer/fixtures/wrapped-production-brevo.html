@@ -1,0 +1,85 @@
+<!DOCTYPE html>
+<html>
+<head><title>Wrapped Brevo Production (regression P0)</title></head>
+<body>
+<!-- Real Brevo shape: outer 100% wrapper → one cell → inner 600 content table -->
+<table class="nl2go-body-table" width="100%" cellpadding="0" cellspacing="0" border="0">
+  <tr>
+    <td align="center">
+      <table width="600" align="center" cellpadding="0" cellspacing="0" border="0" style="width:600px;margin:0 auto;" bgcolor="#ffffff">
+        <!-- Logo -->
+        <tr>
+          <td align="center" width="100%" class="r0-o">
+            <table width="160" align="center"><tr><td>
+              <img src="https://img.mailinblue.com/logo-full.png" alt="Logo" width="160" style="display:block;width:100%" />
+            </td></tr></table>
+          </td>
+        </tr>
+        <!-- Main rich text -->
+        <tr>
+          <td width="100%" class="nl2go-default-textstyle r1-i">
+            <div>
+              <p>Sehr geehrte/r {{ params.anrede }} {{ params.name }},</p>
+              <p><br></p>
+              <p>wir hoffen, dass Ihr Vorhaben erfolgreich verläuft.</p>
+              <p><strong>Auftragsdetails</strong></p>
+              <p>Bestellung {{ params.bestellnummer }}</p>
+              <p>Adresse: {{ params.adresse }}, {{ params.plz }} {{ params.stadt }}</p>
+              <p>Zeitraum: {{ params.datum_von }} – {{ params.datum_bis }}, {{ params.uhrzeit_von }}–{{ params.uhrzeit_bis }}</p>
+              <p>Details: {{ params.detaillierte.angaben }}</p>
+              <p>Hinweis: {{ params.datum.vier.tage.vor.ablauf }}</p>
+            </div>
+          </td>
+        </tr>
+        <!-- Signature + review -->
+        <tr>
+          <td width="100%" class="nl2go-default-textstyle">
+            <div>
+              <p>Mit freundlichen Grüßen</p>
+              <p>Ihr Kundenservice</p>
+              <p><a href="https://g.page/r/example-review">Google Review</a></p>
+            </div>
+          </td>
+        </tr>
+        <!-- Portal promo -->
+        <tr>
+          <td width="100%" class="nl2go-default-textstyle">
+            <div>
+              <p><strong>Wussten Sie schon?</strong></p>
+              <p>In unserem <a href="https://portal.halteverbot123.de">Kundenportal</a> finden Sie alle Aufträge.</p>
+              <p>Mehr unter <a href="https://www.halteverbot123.de">halteverbot123.de</a>.</p>
+            </div>
+          </td>
+        </tr>
+        <!-- Corporate footer 50/50 -->
+        <tr>
+          <td width="50%" class="nl2go-default-textstyle">
+            <img src="https://img.mailinblue.com/co-logo.png" alt="Firma" width="64" />
+            <div>
+              <p><strong>Browo GmbH</strong></p>
+              <p>Musterstraße 1, 10115 Berlin</p>
+              <p><a href="tel:+493012345">+49 30 12345</a></p>
+              <p><a href="https://www.halteverbot123.de">www.halteverbot123.de</a></p>
+              <p><a href="mailto:info@halteverbot123.de">info@halteverbot123.de</a></p>
+            </div>
+          </td>
+          <td width="50%" align="center">
+            <img src="https://img.mailinblue.com/certs.png" alt="Zertifikate" width="180" />
+          </td>
+        </tr>
+        <!-- Social -->
+        <tr>
+          <td align="center" width="100%">
+            <a href="https://www.tiktok.com/@example"><img src="https://cdn.example/icons/tiktok.png" alt="TikTok" width="32" /></a>
+            <a href="https://www.linkedin.com/company/example"><img src="https://cdn.example/icons/linkedin.png" alt="LinkedIn" width="32" /></a>
+            <a href="https://www.instagram.com/example"><img src="https://cdn.example/icons/instagram.png" alt="Instagram" width="32" /></a>
+            <a href="https://www.facebook.com/example"><img src="https://cdn.example/icons/facebook.png" alt="Facebook" width="32" /></a>
+            <a href="https://www.youtube.com/@example"><img src="https://cdn.example/icons/youtube.png" alt="YouTube" width="32" /></a>
+          </td>
+        </tr>
+      </table>
+    </td>
+  </tr>
+</table>
+</body>
+</html>

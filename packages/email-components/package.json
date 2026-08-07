@@ -12,6 +12,9 @@
     "typecheck": "tsc --noEmit",
     "test": "tsx --test src/**/*.test.ts"
   },
+  "dependencies": {
+    "@email-template/email-variables": "*"
+  },
   "peerDependencies": {
     "grapesjs": "^0.22.0"
   },
