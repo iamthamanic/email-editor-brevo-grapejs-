@@ -18,7 +18,7 @@
     "schema_version": 1,
     "kind": "memory-live-doc-pages",
     "status": "memory_viewer_active",
-    "reason": "Enabled GitHub Pages: branch main, path /docs. Viewer: https://iamthamanic.github.io/email-editor-brevo-grapejs-/memory-live-doc/viewer/ (after push).",
+    "reason": "Pages /docs is active and local docs/memory-live-doc/viewer exists. After push, viewer URL should work. No Pages config change needed.",
     "repo": "iamthamanic/email-editor-brevo-grapejs-",
     "default_branch": "main",
     "has_pages": true,
@@ -27,13 +27,13 @@
       "branch": "main",
       "path": "/docs"
     },
-    "html_url": null,
-    "github_pages_status": null,
+    "html_url": "https://iamthamanic.github.io/email-editor-brevo-grapejs-/",
+    "github_pages_status": "errored",
     "viewer_url": "https://iamthamanic.github.io/email-editor-brevo-grapejs-/memory-live-doc/viewer/",
     "local_viewer_present": true,
-    "can_enable": true,
-    "can_change_pages": true,
-    "action_taken": "enabled_docs_legacy",
+    "can_enable": false,
+    "can_change_pages": false,
+    "action_taken": "none",
     "private_note": null
   }
 }
