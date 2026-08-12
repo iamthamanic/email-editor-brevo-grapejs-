@@ -1,0 +1,19 @@
+{
+  "id": "deploy",
+  "title": { "de": "Production Deploy", "en": "Production Deploy" },
+  "summary": {
+    "de": "Produktives Hosting / CI-Deploy (noch TBD)",
+    "en": "Production hosting / CI deploy (still TBD)"
+  },
+  "status": "planned",
+  "packages": [],
+  "paths": [],
+  "user_impact": {
+    "de": ["Noch kein festes Production-Hosting"],
+    "en": ["No fixed production hosting yet"]
+  },
+  "related_changes": [],
+  "review_status": "needs-review",
+  "confidence": 0.7,
+  "locked": false
+}

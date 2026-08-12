@@ -1,10 +1,56 @@
 {
   "schema_version": 1,
-  "phase": "phase-4",
-  "summary": {
-    "de": "Phase 1–4 committed; Variables (params.* Picker + Sample-API) live. Brevo Publish/Sync und ERP-Auth noch offen.",
-    "en": "Phases 1–4 committed; Variables (params.* picker + sample API) live. Brevo Publish/Sync and ERP auth still open."
+  "as_of": "2026-08-12",
+  "commit": "20b2cb88eaf6aa9507665713ed0d3b071622ea19",
+  "product_status": {
+    "de": "Editor + API produktiv nutzbar lokal: Publish/Sync nach Brevo, Legacy-Import, Textbausteine, Compose, Assets und Variables. Living Docs Viewer auf GitHub Pages. Production-Deploy und vollständige ERP-Einbettung noch offen.",
+    "en": "Editor + API usable locally: publish/sync to Brevo, legacy import, text snippets, compose, assets, and variables. Living docs viewer on GitHub Pages. Production deploy and full ERP embedding still open."
   },
+  "active_focus": [
+    {
+      "de": "ERP-Einbettung (iframe/Microfrontend) und Production-Deploy",
+      "en": "ERP embedding (iframe/microfrontend) and production deploy"
+    },
+    {
+      "de": "Memory-Claims (needs-review) und fehlende Screenshots nachziehen",
+      "en": "Catch up memory claims (needs-review) and missing screenshots"
+    }
+  ],
+  "recently_completed": [
+    {
+      "de": "Brevo Sync + Legacy-Import + Karten-Template-Liste",
+      "en": "Brevo sync + legacy import + card template list"
+    },
+    {
+      "de": "Publish, Compose, Textbausteine (Param-Pills/Kategorien), Preview, Assets",
+      "en": "Publish, compose, text snippets (param pills/categories), preview, assets"
+    },
+    {
+      "de": "memory-live-doc Viewer auf GitHub Pages (Light ERP Theme)",
+      "en": "memory-live-doc viewer on GitHub Pages (light ERP theme)"
+    }
+  ],
+  "incomplete": [
+    {
+      "de": "Screenshots für Compose/Textbausteine noch missing",
+      "en": "Screenshots for compose/text snippets still missing"
+    },
+    {
+      "de": "Asset-Storage S3/R2 Provider noch TBD",
+      "en": "Asset storage S3/R2 provider still TBD"
+    }
+  ],
+  "known_gaps": [
+    {
+      "de": "Production hosting / Deploy-Pipeline noch geplant",
+      "en": "Production hosting / deploy pipeline still planned"
+    },
+    {
+      "de": "Viele Memory-Einträge noch needs-review",
+      "en": "Many memory entries still needs-review"
+    }
+  ],
+  "phase": "post-phase-4-product",
   "milestones": [
     {
       "id": "project-setup",
@@ -30,14 +76,24 @@
       "id": "phase-4-variables",
       "title": { "de": "Phase 4 — Variables", "en": "Phase 4 — Variables" },
       "status": "done"
-    }
-  ],
-  "open_risks": [
+    },
     {
-      "de": "ERP-Auth und Deployment noch offen",
-      "en": "ERP auth and deployment still TBD"
+      "id": "brevo-sync-publish",
+      "title": { "de": "Brevo Sync + Publish", "en": "Brevo Sync + Publish" },
+      "status": "done"
+    },
+    {
+      "id": "compose-textbausteine",
+      "title": { "de": "Compose + Textbausteine", "en": "Compose + Text snippets" },
+      "status": "done"
+    },
+    {
+      "id": "erp-embed-deploy",
+      "title": { "de": "ERP Embed + Deploy", "en": "ERP embed + deploy" },
+      "status": "planned"
     }
   ],
   "review_status": "needs-review",
-  "confidence": 0.9
+  "confidence": 0.82,
+  "locked": false
 }

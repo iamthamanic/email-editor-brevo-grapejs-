@@ -2,34 +2,73 @@
   "schema_version": 1,
   "features": [
     {
+      "id": "asset-storage",
+      "title": {
+        "de": "Asset Storage",
+        "en": "Asset Storage"
+      },
+      "summary": {
+        "de": "AssetStorageProvider lokal (Kompression, Magic-Bytes); S3 später austauschbar",
+        "en": "Local AssetStorageProvider (compression, magic bytes); S3 swappable later"
+      },
+      "status": "implemented",
+      "packages": [
+        "apps/api",
+        "apps/editor"
+      ],
+      "paths": [
+        "apps/api/src/assets/"
+      ],
+      "user_impact": {
+        "de": [
+          "Bilder hochladen und im Template verwenden"
+        ],
+        "en": [
+          "Upload images and use them in templates"
+        ]
+      },
+      "related_changes": [
+        "2026-08-12-editor-publish-compose-textbausteine"
+      ],
+      "review_status": "needs-review",
+      "confidence": 0.83,
+      "locked": false
+    },
+    {
       "id": "brevo-publish",
       "title": {
         "de": "Brevo Publish",
         "en": "Brevo Publish"
       },
       "summary": {
-        "de": "Adapter + Publish/Versionierung",
-        "en": "Adapter + publish/versioning"
+        "de": "Publish HTML nach Brevo mit Versionierung und expectedRevision",
+        "en": "Publish HTML to Brevo with versioning and expectedRevision"
       },
-      "status": "planned",
+      "status": "implemented",
       "packages": [
         "apps/editor",
         "apps/api"
       ],
-      "paths": [],
+      "paths": [
+        "apps/api/src/templates/publish.ts",
+        "apps/api/src/brevo/"
+      ],
       "user_impact": {
         "de": [
-          "Noch nicht implementiert — geplant laut PRD"
+          "Templates aus Editor/Liste nach Brevo veröffentlichen",
+          "Versionen und Idempotency gegen Konflikte"
         ],
         "en": [
-          "Not implemented yet — planned per PRD"
+          "Publish templates to Brevo from editor/list",
+          "Versions and idempotency against conflicts"
         ]
       },
       "related_changes": [
-        "2026-08-07-project-setup-bootstrap"
+        "2026-08-07-project-setup-bootstrap",
+        "2026-08-12-editor-publish-compose-textbausteine"
       ],
       "review_status": "needs-review",
-      "confidence": 0.55,
+      "confidence": 0.85,
       "locked": false
     },
     {
@@ -39,28 +78,34 @@
         "en": "Brevo Sync"
       },
       "summary": {
-        "de": "Polling, Remote Detection, Konflikte",
-        "en": "Polling, remote detection, conflicts"
+        "de": "Templates von Brevo ziehen inkl. Remote-Detection und Konflikthandling",
+        "en": "Pull templates from Brevo including remote detection and conflict handling"
       },
-      "status": "planned",
+      "status": "implemented",
       "packages": [
         "apps/editor",
         "apps/api"
       ],
-      "paths": [],
+      "paths": [
+        "apps/api/src/templates/brevoSync.ts",
+        "apps/api/src/brevo/"
+      ],
       "user_impact": {
         "de": [
-          "Noch nicht implementiert — geplant laut PRD"
+          "Sync-Button lädt Brevo-Templates in den lokalen Katalog",
+          "Konflikte werden nicht last-write-wins überschrieben"
         ],
         "en": [
-          "Not implemented yet — planned per PRD"
+          "Sync button loads Brevo templates into the local catalog",
+          "Conflicts are not overwritten last-write-wins"
         ]
       },
       "related_changes": [
-        "2026-08-07-project-setup-bootstrap"
+        "2026-08-07-project-setup-bootstrap",
+        "2026-08-07-brevo-sync-legacy-import"
       ],
       "review_status": "needs-review",
-      "confidence": 0.55,
+      "confidence": 0.85,
       "locked": false
     },
     {
@@ -102,6 +147,32 @@
       "locked": false
     },
     {
+      "id": "deploy",
+      "title": {
+        "de": "Production Deploy",
+        "en": "Production Deploy"
+      },
+      "summary": {
+        "de": "Produktives Hosting / CI-Deploy (noch TBD)",
+        "en": "Production hosting / CI deploy (still TBD)"
+      },
+      "status": "planned",
+      "packages": [],
+      "paths": [],
+      "user_impact": {
+        "de": [
+          "Noch kein festes Production-Hosting"
+        ],
+        "en": [
+          "No fixed production hosting yet"
+        ]
+      },
+      "related_changes": [],
+      "review_status": "needs-review",
+      "confidence": 0.7,
+      "locked": false
+    },
+    {
       "id": "email-components",
       "title": {
         "de": "Email Components",
@@ -134,6 +205,75 @@
       ],
       "review_status": "needs-review",
       "confidence": 0.9,
+      "locked": false
+    },
+    {
+      "id": "email-compose",
+      "title": {
+        "de": "Email Compose",
+        "en": "Email Compose"
+      },
+      "summary": {
+        "de": "HVAI-Compose-Seite: Template wählen, Betreff-Pills, Preview, Versand-Vorbereitung",
+        "en": "HVAI compose page: pick template, subject pills, preview, send prep"
+      },
+      "status": "implemented",
+      "packages": [
+        "apps/editor"
+      ],
+      "paths": [
+        "apps/editor/src/compose/"
+      ],
+      "user_impact": {
+        "de": [
+          "Compose-UI mit Template-Suche und Sync",
+          "Betreff mit Param-Pills",
+          "HTML-Ansicht mit Copy-Button"
+        ],
+        "en": [
+          "Compose UI with template search and sync",
+          "Subject with param pills",
+          "HTML view with copy button"
+        ]
+      },
+      "related_changes": [
+        "2026-08-12-editor-publish-compose-textbausteine"
+      ],
+      "review_status": "needs-review",
+      "confidence": 0.84,
+      "locked": false
+    },
+    {
+      "id": "embed-contract",
+      "title": {
+        "de": "Embed Contract",
+        "en": "Embed Contract"
+      },
+      "summary": {
+        "de": "Dokumentierter Vertrag für ERP-Einbettung (Auth, Theme, Origins)",
+        "en": "Documented contract for ERP embedding (auth, theme, origins)"
+      },
+      "status": "implemented",
+      "packages": [
+        "packages/theme-contract"
+      ],
+      "paths": [
+        "docs/EMBED_CONTRACT.md",
+        "packages/theme-contract/"
+      ],
+      "user_impact": {
+        "de": [
+          "Klare Integrationsregeln für Host-ERP"
+        ],
+        "en": [
+          "Clear integration rules for the host ERP"
+        ]
+      },
+      "related_changes": [
+        "2026-08-12-editor-publish-compose-textbausteine"
+      ],
+      "review_status": "needs-review",
+      "confidence": 0.8,
       "locked": false
     },
     {
@@ -181,28 +321,35 @@
         "en": "Legacy Importer"
       },
       "summary": {
-        "de": "Deterministischer HTML→Project Import",
-        "en": "Deterministic HTML→Project import"
+        "de": "Deterministischer HTML→GrapesJS-Project Import (sanitize + normalize)",
+        "en": "Deterministic HTML→GrapesJS project import (sanitize + normalize)"
       },
-      "status": "planned",
+      "status": "implemented",
       "packages": [
-        "apps/editor",
-        "apps/api"
+        "packages/legacy-importer",
+        "apps/api",
+        "apps/editor"
       ],
-      "paths": [],
+      "paths": [
+        "packages/legacy-importer/"
+      ],
       "user_impact": {
         "de": [
-          "Noch nicht implementiert — geplant laut PRD"
+          "Alte HTML-Mails als bearbeitbare Blöcke übernehmen",
+          "Production-Fixture-Härte für schwierige Templates"
         ],
         "en": [
-          "Not implemented yet — planned per PRD"
+          "Bring legacy HTML emails in as editable blocks",
+          "Production-fixture hardening for difficult templates"
         ]
       },
       "related_changes": [
-        "2026-08-07-project-setup-bootstrap"
+        "2026-08-07-project-setup-bootstrap",
+        "2026-08-07-brevo-sync-legacy-import",
+        "2026-08-12-editor-publish-compose-textbausteine"
       ],
       "review_status": "needs-review",
-      "confidence": 0.55,
+      "confidence": 0.84,
       "locked": false
     },
     {
@@ -212,28 +359,78 @@
         "en": "Security & ERP Adapter"
       },
       "summary": {
-        "de": "Authz, Sanitize, Theme Contract",
-        "en": "Authz, sanitize, theme contract"
+        "de": "ERP JWT, Origin-Checks, Sender-Allowlist, Theme-Contract Embed",
+        "en": "ERP JWT, origin checks, sender allowlist, theme-contract embed"
       },
-      "status": "planned",
+      "status": "implemented",
+      "packages": [
+        "apps/api",
+        "apps/editor",
+        "packages/theme-contract"
+      ],
+      "paths": [
+        "apps/api/src/auth/",
+        "apps/api/src/brevo/senderAllowlist.ts",
+        "packages/theme-contract/",
+        "docs/EMBED_CONTRACT.md"
+      ],
+      "user_impact": {
+        "de": [
+          "API prüft Permissions serverseitig",
+          "Embed kann ERP-Theme-Tokens übernehmen"
+        ],
+        "en": [
+          "API checks permissions server-side",
+          "Embed can adopt ERP theme tokens"
+        ]
+      },
+      "related_changes": [
+        "2026-08-07-project-setup-bootstrap",
+        "2026-08-12-editor-publish-compose-textbausteine"
+      ],
+      "review_status": "needs-review",
+      "confidence": 0.8,
+      "locked": false
+    },
+    {
+      "id": "textbausteine",
+      "title": {
+        "de": "Textbausteine",
+        "en": "Text snippets"
+      },
+      "summary": {
+        "de": "Wiederverwendbare Abschnitte mit Param-Pills, Kategorien und Harvest",
+        "en": "Reusable sections with param pills, categories, and harvest"
+      },
+      "status": "implemented",
       "packages": [
         "apps/editor",
         "apps/api"
       ],
-      "paths": [],
+      "paths": [
+        "apps/editor/src/templates/SavedSectionsMenu.tsx",
+        "apps/editor/src/templates/NewTextbausteinModal.tsx",
+        "apps/editor/src/templates/ParamPillEditor.tsx",
+        "apps/api/src/saved-sections/"
+      ],
       "user_impact": {
         "de": [
-          "Noch nicht implementiert — geplant laut PRD"
+          "Textbausteine anlegen/bearbeiten mit Variablen-Pills",
+          "Kategorien suchen, anlegen, umbenennen, löschen",
+          "Harvest aus bestehenden Titeln"
         ],
         "en": [
-          "Not implemented yet — planned per PRD"
+          "Create/edit snippets with variable pills",
+          "Search, create, rename, delete categories",
+          "Harvest from existing titles"
         ]
       },
       "related_changes": [
-        "2026-08-07-project-setup-bootstrap"
+        "2026-08-07-brevo-sync-legacy-import",
+        "2026-08-12-editor-publish-compose-textbausteine"
       ],
       "review_status": "needs-review",
-      "confidence": 0.55,
+      "confidence": 0.86,
       "locked": false
     },
     {

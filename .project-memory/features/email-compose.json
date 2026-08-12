@@ -1,0 +1,27 @@
+{
+  "id": "email-compose",
+  "title": { "de": "Email Compose", "en": "Email Compose" },
+  "summary": {
+    "de": "HVAI-Compose-Seite: Template wählen, Betreff-Pills, Preview, Versand-Vorbereitung",
+    "en": "HVAI compose page: pick template, subject pills, preview, send prep"
+  },
+  "status": "implemented",
+  "packages": ["apps/editor"],
+  "paths": ["apps/editor/src/compose/"],
+  "user_impact": {
+    "de": [
+      "Compose-UI mit Template-Suche und Sync",
+      "Betreff mit Param-Pills",
+      "HTML-Ansicht mit Copy-Button"
+    ],
+    "en": [
+      "Compose UI with template search and sync",
+      "Subject with param pills",
+      "HTML view with copy button"
+    ]
+  },
+  "related_changes": ["2026-08-12-editor-publish-compose-textbausteine"],
+  "review_status": "needs-review",
+  "confidence": 0.84,
+  "locked": false
+}

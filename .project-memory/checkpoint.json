@@ -1,7 +1,7 @@
 {
   "schema_version": 1,
-  "last_processed_commit": "c6d4572ccdce12c07bff09288b7861e5ea903371",
-  "processed_at": "2026-08-07T08:04:00Z",
+  "last_processed_commit": "20b2cb88eaf6aa9507665713ed0d3b071622ea19",
+  "processed_at": "2026-08-12T15:20:00Z",
   "mode": "incremental",
-  "notes": "Phase 3 corporate components committed on main"
+  "notes": "Catch-up from c6d4572: Brevo sync/publish, legacy import, compose, textbausteine, Pages viewer"
 }

@@ -1,0 +1,157 @@
+{
+  "id": "2026-08-12-editor-publish-compose-textbausteine",
+  "date": "2026-08-12",
+  "type": "feature",
+  "status": "recorded",
+  "title": {
+    "de": "Publish, Compose, Textbausteine und Editor-Härtung",
+    "en": "Publish, compose, text snippets, and editor hardening"
+  },
+  "summary": {
+    "de": "Brevo Publish inkl. Versionierung, HVAI-Compose-Seite, Textbausteine mit Param-Pills/Kategorien/Harvest, Preview-Modal, Assets sowie RTE-/Canvas-Fixes.",
+    "en": "Brevo publish with versioning, HVAI compose page, text snippets with param pills/categories/harvest, preview modal, assets, plus RTE/canvas fixes."
+  },
+  "plain_language": {
+    "de": "Templates können nach Brevo veröffentlicht werden. Es gibt eine Compose-Ansicht zum Schreiben und Versenden, wiederverwendbare Textbausteine mit Variablen-Pills, Vorschau und viele Stabilitätsfixes im Editor.",
+    "en": "Templates can be published to Brevo. There is a compose view for writing and sending, reusable text snippets with variable pills, preview, and many editor stability fixes."
+  },
+  "why_it_matters": {
+    "de": "Das ist der produktive Arbeitsalltag: bearbeiten, wiederverwenden, vorschauen, publishen.",
+    "en": "This is day-to-day product work: edit, reuse, preview, publish."
+  },
+  "user_impact": {
+    "de": [
+      "Publish nach Brevo aus Editor/Liste",
+      "Compose-Seite mit Betreff-Pills und Sync",
+      "Textbausteine anlegen/bearbeiten inkl. Kategorien und Param-Pills",
+      "Preview mit Sample-Variablen",
+      "Stabileres Tippen/Einfügen im Rich-Text"
+    ],
+    "en": [
+      "Publish to Brevo from editor/list",
+      "Compose page with subject pills and sync",
+      "Create/edit text snippets with categories and param pills",
+      "Preview with sample variables",
+      "More stable typing/insert in rich text"
+    ]
+  },
+  "developer_impact": {
+    "de": [
+      "publishTemplate + Gateway create/update",
+      "apps/editor/src/compose/*",
+      "SavedSectionsMenu + ParamPillEditor + Kategorien",
+      "Asset-Upload, Preview-Modal, viele Acceptance-Specs"
+    ],
+    "en": [
+      "publishTemplate + gateway create/update",
+      "apps/editor/src/compose/*",
+      "SavedSectionsMenu + ParamPillEditor + categories",
+      "Asset upload, preview modal, many acceptance specs"
+    ]
+  },
+  "operational_impact": {
+    "de": [
+      "Publish braucht Brevo-Key und Permissions",
+      "Asset-Storage lokal (S3 später)"
+    ],
+    "en": [
+      "Publish needs Brevo key and permissions",
+      "Asset storage local (S3 later)"
+    ]
+  },
+  "git": {
+    "base": "7a18512",
+    "head": "be10e3c",
+    "branch": "main",
+    "pull_request": null
+  },
+  "packages": [
+    "apps/api",
+    "apps/editor",
+    "packages/editor-core",
+    "packages/email-components",
+    "packages/email-variables"
+  ],
+  "affected_features": [
+    "brevo-publish",
+    "textbausteine",
+    "email-compose",
+    "variables",
+    "asset-storage"
+  ],
+  "affected_components": [
+    "apps/api/src/templates/publish.ts",
+    "apps/editor/src/compose/EmailComposePage.tsx",
+    "apps/editor/src/templates/SavedSectionsMenu.tsx",
+    "apps/editor/src/templates/NewTextbausteinModal.tsx",
+    "apps/editor/src/templates/ParamPillEditor.tsx",
+    "apps/api/src/assets/"
+  ],
+  "breaking_changes": [],
+  "migration_required": false,
+  "security_relevant": true,
+  "evidence": [
+    {
+      "kind": "compare",
+      "path": "7a18512...be10e3c",
+      "url": "https://github.com/iamthamanic/email-editor-brevo-grapejs-/compare/7a18512...be10e3c"
+    },
+    {
+      "kind": "commit",
+      "path": "be10e3c",
+      "sha": "be10e3c",
+      "url": "https://github.com/iamthamanic/email-editor-brevo-grapejs-/commit/be10e3c"
+    },
+    {
+      "kind": "file",
+      "path": "apps/api/src/templates/publish.ts",
+      "url": "https://github.com/iamthamanic/email-editor-brevo-grapejs-/blob/be10e3c/apps/api/src/templates/publish.ts"
+    },
+    {
+      "kind": "file",
+      "path": "apps/editor/src/compose/EmailComposePage.tsx",
+      "url": "https://github.com/iamthamanic/email-editor-brevo-grapejs-/blob/be10e3c/apps/editor/src/compose/EmailComposePage.tsx"
+    },
+    {
+      "kind": "file",
+      "path": "apps/editor/src/templates/SavedSectionsMenu.tsx",
+      "url": "https://github.com/iamthamanic/email-editor-brevo-grapejs-/blob/be10e3c/apps/editor/src/templates/SavedSectionsMenu.tsx"
+    },
+    {
+      "kind": "file",
+      "path": "apps/editor/src/templates/NewTextbausteinModal.tsx",
+      "url": "https://github.com/iamthamanic/email-editor-brevo-grapejs-/blob/be10e3c/apps/editor/src/templates/NewTextbausteinModal.tsx"
+    },
+    {
+      "kind": "file",
+      "path": "apps/editor/src/templates/ParamPillEditor.tsx",
+      "url": "https://github.com/iamthamanic/email-editor-brevo-grapejs-/blob/be10e3c/apps/editor/src/templates/ParamPillEditor.tsx"
+    },
+    {
+      "kind": "file",
+      "path": "apps/api/src/assets/",
+      "url": "https://github.com/iamthamanic/email-editor-brevo-grapejs-/tree/be10e3c/apps/api/src/assets"
+    }
+  ],
+  "screenshots": [
+    {
+      "path": "docs/memory-live-doc/assets/2026-08-12-editor-publish-compose-textbausteine/compose.png",
+      "status": "missing",
+      "caption": {
+        "de": "Compose-Ansicht",
+        "en": "Compose view"
+      }
+    },
+    {
+      "path": "docs/memory-live-doc/assets/2026-08-12-editor-publish-compose-textbausteine/textbausteine.png",
+      "status": "missing",
+      "caption": {
+        "de": "Textbausteine-Modal mit Param-Pills",
+        "en": "Text snippet modal with param pills"
+      }
+    }
+  ],
+  "confidence": 0.8,
+  "review_status": "needs-review",
+  "locked": false
+}

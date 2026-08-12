@@ -1,0 +1,19 @@
+{
+  "id": "embed-contract",
+  "title": { "de": "Embed Contract", "en": "Embed Contract" },
+  "summary": {
+    "de": "Dokumentierter Vertrag für ERP-Einbettung (Auth, Theme, Origins)",
+    "en": "Documented contract for ERP embedding (auth, theme, origins)"
+  },
+  "status": "implemented",
+  "packages": ["packages/theme-contract"],
+  "paths": ["docs/EMBED_CONTRACT.md", "packages/theme-contract/"],
+  "user_impact": {
+    "de": ["Klare Integrationsregeln für Host-ERP"],
+    "en": ["Clear integration rules for the host ERP"]
+  },
+  "related_changes": ["2026-08-12-editor-publish-compose-textbausteine"],
+  "review_status": "needs-review",
+  "confidence": 0.8,
+  "locked": false
+}

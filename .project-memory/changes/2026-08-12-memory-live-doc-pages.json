@@ -1,0 +1,101 @@
+{
+  "id": "2026-08-12-memory-live-doc-pages",
+  "date": "2026-08-12",
+  "type": "architecture",
+  "status": "recorded",
+  "title": {
+    "de": "GitHub Pages für memory-live-doc Viewer",
+    "en": "GitHub Pages for memory-live-doc viewer"
+  },
+  "summary": {
+    "de": "Pages auf main+/docs aktiviert, Viewer-Snapshot und Light-UI-Politur veröffentlicht.",
+    "en": "Enabled Pages on main+/docs, published viewer snapshot and light UI polish."
+  },
+  "plain_language": {
+    "de": "Das Projekt-Wiki ist unter GitHub Pages erreichbar und optisch an das ERP-Blau angepasst.",
+    "en": "The project wiki is available on GitHub Pages and visually aligned to ERP blue."
+  },
+  "why_it_matters": {
+    "de": "Status und Timeline sind öffentlich nachvollziehbar - sobald die Memory-Daten aktuell gehalten werden.",
+    "en": "Status and timeline are publicly readable - as long as memory data stays current."
+  },
+  "user_impact": {
+    "de": [
+      "Viewer unter github.io erreichbar"
+    ],
+    "en": [
+      "Viewer reachable on github.io"
+    ]
+  },
+  "developer_impact": {
+    "de": [
+      "docs/memory-live-doc/viewer/**",
+      "docs/.nojekyll + docs/index.html Redirect"
+    ],
+    "en": [
+      "docs/memory-live-doc/viewer/**",
+      "docs/.nojekyll + docs/index.html redirect"
+    ]
+  },
+  "operational_impact": {
+    "de": [
+      "GitHub Pages Legacy Build aus /docs"
+    ],
+    "en": [
+      "GitHub Pages legacy build from /docs"
+    ]
+  },
+  "git": {
+    "base": "be10e3c",
+    "head": "20b2cb88eaf6aa9507665713ed0d3b071622ea19",
+    "branch": "main",
+    "pull_request": null
+  },
+  "packages": [],
+  "affected_features": [],
+  "affected_components": [
+    "docs/memory-live-doc/viewer/",
+    "docs/.nojekyll",
+    "docs/index.html"
+  ],
+  "breaking_changes": [],
+  "migration_required": false,
+  "security_relevant": false,
+  "evidence": [
+    {
+      "kind": "compare",
+      "path": "be10e3c...20b2cb88eaf6aa9507665713ed0d3b071622ea19",
+      "url": "https://github.com/iamthamanic/email-editor-brevo-grapejs-/compare/be10e3c...20b2cb88eaf6aa9507665713ed0d3b071622ea19"
+    },
+    {
+      "kind": "commit",
+      "path": "20b2cb88eaf6aa9507665713ed0d3b071622ea19",
+      "sha": "20b2cb88eaf6aa9507665713ed0d3b071622ea19",
+      "url": "https://github.com/iamthamanic/email-editor-brevo-grapejs-/commit/20b2cb88eaf6aa9507665713ed0d3b071622ea19"
+    },
+    {
+      "kind": "file",
+      "path": "docs/memory-live-doc/viewer/",
+      "url": "https://github.com/iamthamanic/email-editor-brevo-grapejs-/tree/20b2cb88eaf6aa9507665713ed0d3b071622ea19/docs/memory-live-doc/viewer"
+    },
+    {
+      "kind": "file",
+      "path": "docs/.nojekyll",
+      "url": "https://github.com/iamthamanic/email-editor-brevo-grapejs-/blob/20b2cb88eaf6aa9507665713ed0d3b071622ea19/docs/.nojekyll"
+    },
+    {
+      "kind": "file",
+      "path": "docs/index.html",
+      "url": "https://github.com/iamthamanic/email-editor-brevo-grapejs-/blob/20b2cb88eaf6aa9507665713ed0d3b071622ea19/docs/index.html"
+    },
+    {
+      "kind": "blob",
+      "path": "docs/memory-live-doc/viewer/index.html",
+      "url": "https://github.com/iamthamanic/email-editor-brevo-grapejs-/blob/20b2cb88eaf6aa9507665713ed0d3b071622ea19/docs/memory-live-doc/viewer/index.html"
+    }
+  ],
+  "screenshots": [],
+  "confidence": 0.9,
+  "review_status": "needs-review",
+  "locked": false
+}

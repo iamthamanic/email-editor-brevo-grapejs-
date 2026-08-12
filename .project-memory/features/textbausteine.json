@@ -1,0 +1,35 @@
+{
+  "id": "textbausteine",
+  "title": { "de": "Textbausteine", "en": "Text snippets" },
+  "summary": {
+    "de": "Wiederverwendbare Abschnitte mit Param-Pills, Kategorien und Harvest",
+    "en": "Reusable sections with param pills, categories, and harvest"
+  },
+  "status": "implemented",
+  "packages": ["apps/editor", "apps/api"],
+  "paths": [
+    "apps/editor/src/templates/SavedSectionsMenu.tsx",
+    "apps/editor/src/templates/NewTextbausteinModal.tsx",
+    "apps/editor/src/templates/ParamPillEditor.tsx",
+    "apps/api/src/saved-sections/"
+  ],
+  "user_impact": {
+    "de": [
+      "Textbausteine anlegen/bearbeiten mit Variablen-Pills",
+      "Kategorien suchen, anlegen, umbenennen, löschen",
+      "Harvest aus bestehenden Titeln"
+    ],
+    "en": [
+      "Create/edit snippets with variable pills",
+      "Search, create, rename, delete categories",
+      "Harvest from existing titles"
+    ]
+  },
+  "related_changes": [
+    "2026-08-07-brevo-sync-legacy-import",
+    "2026-08-12-editor-publish-compose-textbausteine"
+  ],
+  "review_status": "needs-review",
+  "confidence": 0.86,
+  "locked": false
+}

@@ -2,6 +2,390 @@
   "schema_version": 1,
   "changes": [
     {
+      "id": "2026-08-12-editor-publish-compose-textbausteine",
+      "date": "2026-08-12",
+      "type": "feature",
+      "status": "recorded",
+      "title": {
+        "de": "Publish, Compose, Textbausteine und Editor-Härtung",
+        "en": "Publish, compose, text snippets, and editor hardening"
+      },
+      "summary": {
+        "de": "Brevo Publish inkl. Versionierung, HVAI-Compose-Seite, Textbausteine mit Param-Pills/Kategorien/Harvest, Preview-Modal, Assets sowie RTE-/Canvas-Fixes.",
+        "en": "Brevo publish with versioning, HVAI compose page, text snippets with param pills/categories/harvest, preview modal, assets, plus RTE/canvas fixes."
+      },
+      "plain_language": {
+        "de": "Templates können nach Brevo veröffentlicht werden. Es gibt eine Compose-Ansicht zum Schreiben und Versenden, wiederverwendbare Textbausteine mit Variablen-Pills, Vorschau und viele Stabilitätsfixes im Editor.",
+        "en": "Templates can be published to Brevo. There is a compose view for writing and sending, reusable text snippets with variable pills, preview, and many editor stability fixes."
+      },
+      "why_it_matters": {
+        "de": "Das ist der produktive Arbeitsalltag: bearbeiten, wiederverwenden, vorschauen, publishen.",
+        "en": "This is day-to-day product work: edit, reuse, preview, publish."
+      },
+      "user_impact": {
+        "de": [
+          "Publish nach Brevo aus Editor/Liste",
+          "Compose-Seite mit Betreff-Pills und Sync",
+          "Textbausteine anlegen/bearbeiten inkl. Kategorien und Param-Pills",
+          "Preview mit Sample-Variablen",
+          "Stabileres Tippen/Einfügen im Rich-Text"
+        ],
+        "en": [
+          "Publish to Brevo from editor/list",
+          "Compose page with subject pills and sync",
+          "Create/edit text snippets with categories and param pills",
+          "Preview with sample variables",
+          "More stable typing/insert in rich text"
+        ]
+      },
+      "developer_impact": {
+        "de": [
+          "publishTemplate + Gateway create/update",
+          "apps/editor/src/compose/*",
+          "SavedSectionsMenu + ParamPillEditor + Kategorien",
+          "Asset-Upload, Preview-Modal, viele Acceptance-Specs"
+        ],
+        "en": [
+          "publishTemplate + gateway create/update",
+          "apps/editor/src/compose/*",
+          "SavedSectionsMenu + ParamPillEditor + categories",
+          "Asset upload, preview modal, many acceptance specs"
+        ]
+      },
+      "operational_impact": {
+        "de": [
+          "Publish braucht Brevo-Key und Permissions",
+          "Asset-Storage lokal (S3 später)"
+        ],
+        "en": [
+          "Publish needs Brevo key and permissions",
+          "Asset storage local (S3 later)"
+        ]
+      },
+      "git": {
+        "base": "7a18512",
+        "head": "be10e3c",
+        "branch": "main",
+        "pull_request": null
+      },
+      "packages": [
+        "apps/api",
+        "apps/editor",
+        "packages/editor-core",
+        "packages/email-components",
+        "packages/email-variables"
+      ],
+      "affected_features": [
+        "brevo-publish",
+        "textbausteine",
+        "email-compose",
+        "variables",
+        "asset-storage"
+      ],
+      "affected_components": [
+        "apps/api/src/templates/publish.ts",
+        "apps/editor/src/compose/EmailComposePage.tsx",
+        "apps/editor/src/templates/SavedSectionsMenu.tsx",
+        "apps/editor/src/templates/NewTextbausteinModal.tsx",
+        "apps/editor/src/templates/ParamPillEditor.tsx",
+        "apps/api/src/assets/"
+      ],
+      "breaking_changes": [],
+      "migration_required": false,
+      "security_relevant": true,
+      "evidence": [
+        {
+          "kind": "compare",
+          "path": "7a18512...be10e3c",
+          "url": "https://github.com/iamthamanic/email-editor-brevo-grapejs-/compare/7a18512...be10e3c"
+        },
+        {
+          "kind": "commit",
+          "path": "be10e3c",
+          "sha": "be10e3c",
+          "url": "https://github.com/iamthamanic/email-editor-brevo-grapejs-/commit/be10e3c"
+        },
+        {
+          "kind": "file",
+          "path": "apps/api/src/templates/publish.ts",
+          "url": "https://github.com/iamthamanic/email-editor-brevo-grapejs-/blob/be10e3c/apps/api/src/templates/publish.ts"
+        },
+        {
+          "kind": "file",
+          "path": "apps/editor/src/compose/EmailComposePage.tsx",
+          "url": "https://github.com/iamthamanic/email-editor-brevo-grapejs-/blob/be10e3c/apps/editor/src/compose/EmailComposePage.tsx"
+        },
+        {
+          "kind": "file",
+          "path": "apps/editor/src/templates/SavedSectionsMenu.tsx",
+          "url": "https://github.com/iamthamanic/email-editor-brevo-grapejs-/blob/be10e3c/apps/editor/src/templates/SavedSectionsMenu.tsx"
+        },
+        {
+          "kind": "file",
+          "path": "apps/editor/src/templates/NewTextbausteinModal.tsx",
+          "url": "https://github.com/iamthamanic/email-editor-brevo-grapejs-/blob/be10e3c/apps/editor/src/templates/NewTextbausteinModal.tsx"
+        },
+        {
+          "kind": "file",
+          "path": "apps/editor/src/templates/ParamPillEditor.tsx",
+          "url": "https://github.com/iamthamanic/email-editor-brevo-grapejs-/blob/be10e3c/apps/editor/src/templates/ParamPillEditor.tsx"
+        },
+        {
+          "kind": "file",
+          "path": "apps/api/src/assets/",
+          "url": "https://github.com/iamthamanic/email-editor-brevo-grapejs-/tree/be10e3c/apps/api/src/assets"
+        }
+      ],
+      "screenshots": [
+        {
+          "path": "docs/memory-live-doc/assets/2026-08-12-editor-publish-compose-textbausteine/compose.png",
+          "status": "missing",
+          "caption": {
+            "de": "Compose-Ansicht",
+            "en": "Compose view"
+          }
+        },
+        {
+          "path": "docs/memory-live-doc/assets/2026-08-12-editor-publish-compose-textbausteine/textbausteine.png",
+          "status": "missing",
+          "caption": {
+            "de": "Textbausteine-Modal mit Param-Pills",
+            "en": "Text snippet modal with param pills"
+          }
+        }
+      ],
+      "confidence": 0.8,
+      "review_status": "needs-review",
+      "locked": false
+    },
+    {
+      "id": "2026-08-12-memory-live-doc-pages",
+      "date": "2026-08-12",
+      "type": "architecture",
+      "status": "recorded",
+      "title": {
+        "de": "GitHub Pages für memory-live-doc Viewer",
+        "en": "GitHub Pages for memory-live-doc viewer"
+      },
+      "summary": {
+        "de": "Pages auf main+/docs aktiviert, Viewer-Snapshot und Light-UI-Politur veröffentlicht.",
+        "en": "Enabled Pages on main+/docs, published viewer snapshot and light UI polish."
+      },
+      "plain_language": {
+        "de": "Das Projekt-Wiki ist unter GitHub Pages erreichbar und optisch an das ERP-Blau angepasst.",
+        "en": "The project wiki is available on GitHub Pages and visually aligned to ERP blue."
+      },
+      "why_it_matters": {
+        "de": "Status und Timeline sind öffentlich nachvollziehbar - sobald die Memory-Daten aktuell gehalten werden.",
+        "en": "Status and timeline are publicly readable - as long as memory data stays current."
+      },
+      "user_impact": {
+        "de": [
+          "Viewer unter github.io erreichbar"
+        ],
+        "en": [
+          "Viewer reachable on github.io"
+        ]
+      },
+      "developer_impact": {
+        "de": [
+          "docs/memory-live-doc/viewer/**",
+          "docs/.nojekyll + docs/index.html Redirect"
+        ],
+        "en": [
+          "docs/memory-live-doc/viewer/**",
+          "docs/.nojekyll + docs/index.html redirect"
+        ]
+      },
+      "operational_impact": {
+        "de": [
+          "GitHub Pages Legacy Build aus /docs"
+        ],
+        "en": [
+          "GitHub Pages legacy build from /docs"
+        ]
+      },
+      "git": {
+        "base": "be10e3c",
+        "head": "20b2cb88eaf6aa9507665713ed0d3b071622ea19",
+        "branch": "main",
+        "pull_request": null
+      },
+      "packages": [],
+      "affected_features": [],
+      "affected_components": [
+        "docs/memory-live-doc/viewer/",
+        "docs/.nojekyll",
+        "docs/index.html"
+      ],
+      "breaking_changes": [],
+      "migration_required": false,
+      "security_relevant": false,
+      "evidence": [
+        {
+          "kind": "compare",
+          "path": "be10e3c...20b2cb88eaf6aa9507665713ed0d3b071622ea19",
+          "url": "https://github.com/iamthamanic/email-editor-brevo-grapejs-/compare/be10e3c...20b2cb88eaf6aa9507665713ed0d3b071622ea19"
+        },
+        {
+          "kind": "commit",
+          "path": "20b2cb88eaf6aa9507665713ed0d3b071622ea19",
+          "sha": "20b2cb88eaf6aa9507665713ed0d3b071622ea19",
+          "url": "https://github.com/iamthamanic/email-editor-brevo-grapejs-/commit/20b2cb88eaf6aa9507665713ed0d3b071622ea19"
+        },
+        {
+          "kind": "file",
+          "path": "docs/memory-live-doc/viewer/",
+          "url": "https://github.com/iamthamanic/email-editor-brevo-grapejs-/tree/20b2cb88eaf6aa9507665713ed0d3b071622ea19/docs/memory-live-doc/viewer"
+        },
+        {
+          "kind": "file",
+          "path": "docs/.nojekyll",
+          "url": "https://github.com/iamthamanic/email-editor-brevo-grapejs-/blob/20b2cb88eaf6aa9507665713ed0d3b071622ea19/docs/.nojekyll"
+        },
+        {
+          "kind": "file",
+          "path": "docs/index.html",
+          "url": "https://github.com/iamthamanic/email-editor-brevo-grapejs-/blob/20b2cb88eaf6aa9507665713ed0d3b071622ea19/docs/index.html"
+        },
+        {
+          "kind": "blob",
+          "path": "docs/memory-live-doc/viewer/index.html",
+          "url": "https://github.com/iamthamanic/email-editor-brevo-grapejs-/blob/20b2cb88eaf6aa9507665713ed0d3b071622ea19/docs/memory-live-doc/viewer/index.html"
+        }
+      ],
+      "screenshots": [],
+      "confidence": 0.9,
+      "review_status": "needs-review",
+      "locked": false
+    },
+    {
+      "id": "2026-08-07-brevo-sync-legacy-import",
+      "date": "2026-08-07",
+      "type": "feature",
+      "status": "recorded",
+      "title": {
+        "de": "Brevo Sync, Legacy-Import und Karten-Template-Liste",
+        "en": "Brevo sync, legacy import, and card-style template list"
+      },
+      "summary": {
+        "de": "Templates von Brevo ziehen (sync-brevo), Legacy-HTML importieren, Saved Sections API sowie Karten-UI in der Template-Liste.",
+        "en": "Pull templates from Brevo (sync-brevo), import legacy HTML, saved-sections API, and card UI in the template list."
+      },
+      "plain_language": {
+        "de": "Man kann jetzt bestehende Brevo-Templates in den Editor holen und alte HTML-Mails als bearbeitbare Blöcke übernehmen. Die Übersicht zeigt Templates als Karten.",
+        "en": "You can now pull existing Brevo templates into the editor and turn legacy HTML emails into editable blocks. The list shows templates as cards."
+      },
+      "why_it_matters": {
+        "de": "Ohne Sync und Import müssten Templates manuell neu gebaut werden.",
+        "en": "Without sync and import, templates would have to be rebuilt by hand."
+      },
+      "user_impact": {
+        "de": [
+          "Brevo-Sync-Button lädt Remote-Templates",
+          "Legacy-HTML kann importiert werden",
+          "Karten-Ansicht in der Template-Liste"
+        ],
+        "en": [
+          "Brevo sync button loads remote templates",
+          "Legacy HTML can be imported",
+          "Card view in the template list"
+        ]
+      },
+      "developer_impact": {
+        "de": [
+          "API POST /api/templates/sync-brevo",
+          "BrevoTemplateGateway + brevoSync Service",
+          "Saved-sections CRUD + Harvest-Grundlage",
+          "Prisma Insights-/Sync-Felder"
+        ],
+        "en": [
+          "API POST /api/templates/sync-brevo",
+          "BrevoTemplateGateway + brevoSync service",
+          "Saved-sections CRUD + harvest foundation",
+          "Prisma insights/sync fields"
+        ]
+      },
+      "operational_impact": {
+        "de": [
+          "BREVO_API_KEY nur Backend",
+          "Rate-Limit auf Sync-Endpoint"
+        ],
+        "en": [
+          "BREVO_API_KEY backend-only",
+          "Rate limit on sync endpoint"
+        ]
+      },
+      "git": {
+        "base": "c6d4572ccdce12c07bff09288b7861e5ea903371",
+        "head": "7a18512",
+        "branch": "main",
+        "pull_request": null
+      },
+      "packages": [
+        "apps/api",
+        "apps/editor",
+        "packages/legacy-importer"
+      ],
+      "affected_features": [
+        "brevo-sync",
+        "legacy-importer",
+        "textbausteine"
+      ],
+      "affected_components": [
+        "apps/api/src/templates/brevoSync.ts",
+        "apps/api/src/brevo/",
+        "apps/api/src/saved-sections/",
+        "apps/editor/src/templates/TemplateListPage.tsx",
+        "packages/legacy-importer/"
+      ],
+      "breaking_changes": [],
+      "migration_required": true,
+      "security_relevant": true,
+      "evidence": [
+        {
+          "kind": "compare",
+          "path": "c6d4572ccdce12c07bff09288b7861e5ea903371...7a18512",
+          "url": "https://github.com/iamthamanic/email-editor-brevo-grapejs-/compare/c6d4572ccdce12c07bff09288b7861e5ea903371...7a18512"
+        },
+        {
+          "kind": "commit",
+          "path": "7a18512",
+          "sha": "7a18512",
+          "url": "https://github.com/iamthamanic/email-editor-brevo-grapejs-/commit/7a18512"
+        },
+        {
+          "kind": "file",
+          "path": "apps/api/src/templates/brevoSync.ts",
+          "url": "https://github.com/iamthamanic/email-editor-brevo-grapejs-/blob/7a18512/apps/api/src/templates/brevoSync.ts"
+        },
+        {
+          "kind": "file",
+          "path": "apps/api/src/brevo/",
+          "url": "https://github.com/iamthamanic/email-editor-brevo-grapejs-/tree/7a18512/apps/api/src/brevo"
+        },
+        {
+          "kind": "file",
+          "path": "apps/api/src/saved-sections/",
+          "url": "https://github.com/iamthamanic/email-editor-brevo-grapejs-/tree/7a18512/apps/api/src/saved-sections"
+        },
+        {
+          "kind": "file",
+          "path": "apps/editor/src/templates/TemplateListPage.tsx",
+          "url": "https://github.com/iamthamanic/email-editor-brevo-grapejs-/blob/7a18512/apps/editor/src/templates/TemplateListPage.tsx"
+        },
+        {
+          "kind": "file",
+          "path": "packages/legacy-importer/",
+          "url": "https://github.com/iamthamanic/email-editor-brevo-grapejs-/tree/7a18512/packages/legacy-importer"
+        }
+      ],
+      "screenshots": [],
+      "confidence": 0.82,
+      "review_status": "needs-review",
+      "locked": false
+    },
+    {
       "id": "2026-08-07-phase-3-corporate-components",
       "date": "2026-08-07",
       "type": "feat",

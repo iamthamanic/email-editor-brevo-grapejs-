@@ -1,16 +1,33 @@
 {
   "id": "security-erp",
   "title": { "de": "Security & ERP Adapter", "en": "Security & ERP Adapter" },
-  "summary": { "de": "Authz, Sanitize, Theme Contract", "en": "Authz, sanitize, theme contract" },
-  "status": "planned",
-  "packages": ["apps/editor", "apps/api"],
-  "paths": [],
-  "user_impact": {
-    "de": ["Noch nicht implementiert — geplant laut PRD"],
-    "en": ["Not implemented yet — planned per PRD"]
+  "summary": {
+    "de": "ERP JWT, Origin-Checks, Sender-Allowlist, Theme-Contract Embed",
+    "en": "ERP JWT, origin checks, sender allowlist, theme-contract embed"
   },
-  "related_changes": ["2026-08-07-project-setup-bootstrap"],
+  "status": "implemented",
+  "packages": ["apps/api", "apps/editor", "packages/theme-contract"],
+  "paths": [
+    "apps/api/src/auth/",
+    "apps/api/src/brevo/senderAllowlist.ts",
+    "packages/theme-contract/",
+    "docs/EMBED_CONTRACT.md"
+  ],
+  "user_impact": {
+    "de": [
+      "API prüft Permissions serverseitig",
+      "Embed kann ERP-Theme-Tokens übernehmen"
+    ],
+    "en": [
+      "API checks permissions server-side",
+      "Embed can adopt ERP theme tokens"
+    ]
+  },
+  "related_changes": [
+    "2026-08-07-project-setup-bootstrap",
+    "2026-08-12-editor-publish-compose-textbausteine"
+  ],
   "review_status": "needs-review",
-  "confidence": 0.55,
+  "confidence": 0.8,
   "locked": false
 }

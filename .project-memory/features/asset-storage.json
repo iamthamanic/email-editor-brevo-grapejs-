@@ -1,0 +1,19 @@
+{
+  "id": "asset-storage",
+  "title": { "de": "Asset Storage", "en": "Asset Storage" },
+  "summary": {
+    "de": "AssetStorageProvider lokal (Kompression, Magic-Bytes); S3 später austauschbar",
+    "en": "Local AssetStorageProvider (compression, magic bytes); S3 swappable later"
+  },
+  "status": "implemented",
+  "packages": ["apps/api", "apps/editor"],
+  "paths": ["apps/api/src/assets/"],
+  "user_impact": {
+    "de": ["Bilder hochladen und im Template verwenden"],
+    "en": ["Upload images and use them in templates"]
+  },
+  "related_changes": ["2026-08-12-editor-publish-compose-textbausteine"],
+  "review_status": "needs-review",
+  "confidence": 0.83,
+  "locked": false
+}

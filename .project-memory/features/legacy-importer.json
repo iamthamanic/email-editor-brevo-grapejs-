@@ -1,16 +1,29 @@
 {
   "id": "legacy-importer",
   "title": { "de": "Legacy Importer", "en": "Legacy Importer" },
-  "summary": { "de": "Deterministischer HTML→Project Import", "en": "Deterministic HTML→Project import" },
-  "status": "planned",
-  "packages": ["apps/editor", "apps/api"],
-  "paths": [],
-  "user_impact": {
-    "de": ["Noch nicht implementiert — geplant laut PRD"],
-    "en": ["Not implemented yet — planned per PRD"]
+  "summary": {
+    "de": "Deterministischer HTML→GrapesJS-Project Import (sanitize + normalize)",
+    "en": "Deterministic HTML→GrapesJS project import (sanitize + normalize)"
   },
-  "related_changes": ["2026-08-07-project-setup-bootstrap"],
+  "status": "implemented",
+  "packages": ["packages/legacy-importer", "apps/api", "apps/editor"],
+  "paths": ["packages/legacy-importer/"],
+  "user_impact": {
+    "de": [
+      "Alte HTML-Mails als bearbeitbare Blöcke übernehmen",
+      "Production-Fixture-Härte für schwierige Templates"
+    ],
+    "en": [
+      "Bring legacy HTML emails in as editable blocks",
+      "Production-fixture hardening for difficult templates"
+    ]
+  },
+  "related_changes": [
+    "2026-08-07-project-setup-bootstrap",
+    "2026-08-07-brevo-sync-legacy-import",
+    "2026-08-12-editor-publish-compose-textbausteine"
+  ],
   "review_status": "needs-review",
-  "confidence": 0.55,
+  "confidence": 0.84,
   "locked": false
 }

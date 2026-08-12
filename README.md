@@ -97,9 +97,9 @@ Bild-Upload: Eigenschaften-Modal → **Vom Computer hochladen** (`POST /api/asse
 
 ## Recent changes
 
-- Rich-Text: Mid-Click-Caret und Param-Pills in Brevo-Import-HTML (iframe-sichere Host-Auflösung)
-- Preview-Modal (Sample-Variablen), Canvas-Drop-Indikatoren, Asset-Upload-Kompression
-- Brevo Sync/Publish, Legacy-Import-Härte (Production-Template-4 Fixture), Embed-Contract-Doku
+- Living Docs Catch-up: Features/Status/Changes bis HEAD; Viewer Status zeigt Publish/Sync/Compose
+- Rich-Text: Mid-Click-Caret und Param-Pills; Preview-Modal, Assets, Textbausteine-Kategorien
+- Brevo Sync/Publish, Legacy-Import, Compose-Seite, Embed-Contract; Pages Viewer (ERP Light Theme)
 
 ## Agent workflow
 

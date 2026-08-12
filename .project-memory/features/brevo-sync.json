@@ -1,16 +1,31 @@
 {
   "id": "brevo-sync",
   "title": { "de": "Brevo Sync", "en": "Brevo Sync" },
-  "summary": { "de": "Polling, Remote Detection, Konflikte", "en": "Polling, remote detection, conflicts" },
-  "status": "planned",
-  "packages": ["apps/editor", "apps/api"],
-  "paths": [],
-  "user_impact": {
-    "de": ["Noch nicht implementiert — geplant laut PRD"],
-    "en": ["Not implemented yet — planned per PRD"]
+  "summary": {
+    "de": "Templates von Brevo ziehen inkl. Remote-Detection und Konflikthandling",
+    "en": "Pull templates from Brevo including remote detection and conflict handling"
   },
-  "related_changes": ["2026-08-07-project-setup-bootstrap"],
+  "status": "implemented",
+  "packages": ["apps/editor", "apps/api"],
+  "paths": [
+    "apps/api/src/templates/brevoSync.ts",
+    "apps/api/src/brevo/"
+  ],
+  "user_impact": {
+    "de": [
+      "Sync-Button lädt Brevo-Templates in den lokalen Katalog",
+      "Konflikte werden nicht last-write-wins überschrieben"
+    ],
+    "en": [
+      "Sync button loads Brevo templates into the local catalog",
+      "Conflicts are not overwritten last-write-wins"
+    ]
+  },
+  "related_changes": [
+    "2026-08-07-project-setup-bootstrap",
+    "2026-08-07-brevo-sync-legacy-import"
+  ],
   "review_status": "needs-review",
-  "confidence": 0.55,
+  "confidence": 0.85,
   "locked": false
 }

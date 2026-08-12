@@ -1,16 +1,31 @@
 {
   "id": "brevo-publish",
   "title": { "de": "Brevo Publish", "en": "Brevo Publish" },
-  "summary": { "de": "Adapter + Publish/Versionierung", "en": "Adapter + publish/versioning" },
-  "status": "planned",
-  "packages": ["apps/editor", "apps/api"],
-  "paths": [],
-  "user_impact": {
-    "de": ["Noch nicht implementiert — geplant laut PRD"],
-    "en": ["Not implemented yet — planned per PRD"]
+  "summary": {
+    "de": "Publish HTML nach Brevo mit Versionierung und expectedRevision",
+    "en": "Publish HTML to Brevo with versioning and expectedRevision"
   },
-  "related_changes": ["2026-08-07-project-setup-bootstrap"],
+  "status": "implemented",
+  "packages": ["apps/editor", "apps/api"],
+  "paths": [
+    "apps/api/src/templates/publish.ts",
+    "apps/api/src/brevo/"
+  ],
+  "user_impact": {
+    "de": [
+      "Templates aus Editor/Liste nach Brevo veröffentlichen",
+      "Versionen und Idempotency gegen Konflikte"
+    ],
+    "en": [
+      "Publish templates to Brevo from editor/list",
+      "Versions and idempotency against conflicts"
+    ]
+  },
+  "related_changes": [
+    "2026-08-07-project-setup-bootstrap",
+    "2026-08-12-editor-publish-compose-textbausteine"
+  ],
   "review_status": "needs-review",
-  "confidence": 0.55,
+  "confidence": 0.85,
   "locked": false
 }
