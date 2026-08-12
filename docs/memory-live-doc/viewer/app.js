@@ -207,6 +207,27 @@
     Object.keys(map).forEach((k) => {
       if (tokens[k]) root.style.setProperty(map[k], tokens[k]);
     });
+
+    // Light wiki: readable on-accent text + color-scheme for native controls
+    const bg = String(tokens.bg || "#f4f6f8").trim().toLowerCase();
+    const isLight =
+      /^#f|^#e|^#fff|^rgb\(\s*2[4-9]|rgba\(\s*2[4-9]|white/.test(bg) ||
+      bg === "#fafafa" ||
+      bg === "#f4f6f8";
+    root.style.colorScheme = isLight ? "light" : "dark";
+    root.style.setProperty(
+      "--ink-on-accent",
+      isLight ? "#ffffff" : "#04140e",
+    );
+    // Guard: styleguide sometimes maps muted == primary; keep secondary gray
+    if (
+      tokens.muted &&
+      tokens.accent &&
+      String(tokens.muted).toLowerCase() === String(tokens.accent).toLowerCase()
+    ) {
+      root.style.setProperty("--muted", isLight ? "#5a6b7c" : "#9aa3b2");
+    }
+
     const fontLink = document.getElementById("theme-fonts");
     if (fontLink && theme && theme.fonts && theme.fonts.google) {
       fontLink.href = theme.fonts.google;

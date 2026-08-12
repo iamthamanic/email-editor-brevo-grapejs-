@@ -1,43 +1,45 @@
 {
   "schema_version": 1,
-  "id": "project-derived",
-  "source": "docs/UI_STYLEGUIDE.md",
-  "locked": false,
+  "id": "email-template-viewer-light",
+  "source": "docs/UI_STYLEGUIDE.md + viewer polish",
+  "locked": true,
   "tokens": {
-    "bg": "#fafafa",
+    "bg": "#f4f6f8",
     "bgElev": "#ffffff",
-    "ink": "#0a0a0a",
-    "muted": "#275073",
-    "line": "#f0f0f0",
+    "ink": "#15202b",
+    "muted": "#5a6b7c",
+    "line": "#d5dde6",
     "accent": "#275073",
-    "accent2": "#6bb89a",
-    "danger": "#e07a6a",
-    "radius": "8px",
-    "fontDisplay": "IBM Plex Sans, Segoe UI, sans-serif",
-    "fontBody": "IBM Plex Sans, Segoe UI, sans-serif",
+    "accent2": "#2f8f6b",
+    "danger": "#b42318",
+    "radius": "10px",
+    "fontDisplay": "IBM Plex Sans, Segoe UI, system-ui, sans-serif",
+    "fontBody": "IBM Plex Sans, Segoe UI, system-ui, sans-serif",
     "fontMono": "IBM Plex Mono, ui-monospace, monospace",
     "tabRadius": "8px",
-    "bgGlow1": "#275073",
-    "bgGlow2": "#fafafa"
+    "bgGlow1": "rgba(39, 80, 115, 0.08)",
+    "bgGlow2": "transparent"
   },
   "fonts": {
     "google": "https://fonts.googleapis.com/css2?family=IBM+Plex+Sans:wght@400;500;600;700&family=IBM+Plex+Mono:wght@400;500&display=swap"
   },
   "mermaid": {
-    "theme": "default",
+    "theme": "base",
     "themeVariables": {
       "primaryColor": "#ffffff",
-      "primaryTextColor": "#e8eaef",
+      "primaryTextColor": "#15202b",
       "primaryBorderColor": "#275073",
-      "lineColor": "#275073",
-      "secondaryColor": "#ffffff",
-      "tertiaryColor": "#fafafa",
-      "background": "#fafafa",
+      "lineColor": "#5a6b7c",
+      "secondaryColor": "#eef2f6",
+      "tertiaryColor": "#f4f6f8",
+      "background": "#f4f6f8",
       "mainBkg": "#ffffff",
       "nodeBorder": "#275073",
-      "clusterBkg": "#fafafa",
-      "titleColor": "#e8eaef",
-      "edgeLabelBackground": "#ffffff"
+      "clusterBkg": "#eef2f6",
+      "titleColor": "#15202b",
+      "edgeLabelBackground": "#ffffff",
+      "textColor": "#15202b",
+      "nodeTextColor": "#15202b"
     }
   }
 }
