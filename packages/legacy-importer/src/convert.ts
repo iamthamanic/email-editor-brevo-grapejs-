@@ -3,6 +3,7 @@
  * Location: packages/legacy-importer/src/convert.ts
  */
 
+import { coalesceBrokenParamHtmlDeep, replaceLegacyHashTokens } from "@email-template/email-variables";
 import { parseBrevoHtml } from "./parser/parseBrevoHtml.js";
 import {
   hasEditorSectionMarkers,
@@ -12,7 +13,7 @@ import {
   normalizedEmailToGrapesComponents,
   tokenizeParams,
 } from "./mapper/toGrapesJs.js";
-import type { ConversionResult } from "./types.js";
+import type { ConversionResult, GrapesComponentDef } from "./types.js";
 import { buildConversionReport } from "./validation/validateConversion.js";
 
 export { tokenizeParams };
@@ -21,9 +22,11 @@ export { tokenizeParams };
  * Convert Brevo / table-based email HTML into normalized doc + GrapesJS tree.
  * Editor-exported HTML (data-email-type=email-section) uses a native path so
  * sibling sections are not collapsed by Brevo root/row recognition.
+ * Legacy `#TOKEN#` placeholders are rewritten to `{{ params.* }}` first.
  */
 export function convertBrevoHtml(html: string): ConversionResult {
   const warnings: string[] = [];
+  html = replaceLegacyHashTokens(html ?? "");
 
   if (!html?.trim()) {
     const emptyDoc = {
@@ -63,7 +66,9 @@ export function convertBrevoHtml(html: string): ConversionResult {
   const document = hasEditorSectionMarkers(html)
     ? parseEditorNativeHtml(html)
     : parseBrevoHtml(html);
-  const components = normalizedEmailToGrapesComponents(document);
+  // parseBrevoHtml / native already coalesce; keep as safety net for empty path
+  const raw = normalizedEmailToGrapesComponents(document);
+  const components = coalesceBrokenParamHtmlDeep(raw) as GrapesComponentDef[];
   const report = buildConversionReport(html, document, components, warnings);
   return { document, components, report };
 }

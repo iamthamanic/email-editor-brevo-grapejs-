@@ -54,8 +54,10 @@ Ziel-ERP: **[browo/HVAI-123](https://github.com/browo/HVAI-123)** (browo-ai-umbr
 | DB | PostgreSQL (+ Docker Compose) | Prisma migrations |
 | Assets | `AssetStorageProvider` | S3/R2/… austauschbar |
 | Styling | CSS Custom Properties (Theme Contract) | Tokens vom Host; Fallbacks lokal |
-| Shared | `packages/` (schema, editor-core, components, brevo-adapter, importer, renderer, theme-contract) | DRY Frontend/Backend |
-| Tests | Vitest/Jest (TBD) + Playwright via @verify-ui | Importer fixtures, render snapshots |
+| Shared | `packages/` (schema, editor-core, components, importer, email-variables, theme-contract) | DRY Frontend/Backend |
+| Brevo | `apps/api/src/brevo/` (`BrevoTemplateGateway`) | Kein separates `packages/brevo-adapter` (noch) — Gateway nur Backend |
+| Render | GrapesJS im Browser (`getHtml` / `buildPublishHtml`) | Kein `packages/email-renderer` — Publish-HTML clientseitig |
+| Tests | Vitest/`node:test` + Playwright via @verify-ui | Importer fixtures, structural e2e harness |
 | Deployment | TBD | Secrets nur Env/Secret Manager |
 
 **Nicht verwenden:** Brevo API Key im Frontend; HTML-Reconstruction als Editor-Source; Last-Write-Wins bei Sync-Konflikten; KI im Production-Import-Request.
@@ -68,24 +70,28 @@ Ziel-ERP: **[browo/HVAI-123](https://github.com/browo/HVAI-123)** (browo-ai-umbr
 email-template-service/
 ├── apps/
 │   ├── editor/          # GrapesJS UI (Source of Truth: Project JSON)
+│   │                    # Render/Publish-HTML: getSyncedHtml + buildPublishHtml
 │   └── api/             # Template API, Sync, Authz, Assets
+│       └── src/brevo/   # BrevoTemplateGateway (HTTP client + facade)
 ├── packages/
 │   ├── email-schema/
 │   ├── editor-core/
 │   ├── email-components/ # GrapesJS block/component registry
-│   ├── brevo-adapter/   # einzige Brevo-Kommunikationsschicht
+│   ├── email-variables/
 │   ├── legacy-importer/
-│   ├── email-renderer/
 │   └── theme-contract/
 ├── docs/
 ├── .qa/
 └── AGENTS.md
 ```
 
+> **Hinweis:** `packages/brevo-adapter` und `packages/email-renderer` stehen in älteren Skizzen —
+> sie sind **nicht** im Repo. Brevo nur über `apps/api/src/brevo/`; HTML-Export über GrapesJS im Editor.
+
 ### Schichtenregeln
 
 1. **GrapesJS Project JSON** ist die Editor-Source-of-Truth; Brevo erhält nur publiziertes HTML.
-2. Businesslogik spricht **`BrevoTemplateGateway`**, nie direkt Brevo SDK/HTTP aus UI/Importer/Renderer/Sync.
+2. Businesslogik spricht **`BrevoTemplateGateway`** (`apps/api/src/brevo/gateway.ts`), nie direkt Brevo SDK/HTTP aus UI/Importer/Sync.
 3. **Permissions** serverseitig prüfen; UI-Verstecken ist keine Security.
 4. **ComponentRegistry** / Variable Registry / Theme Tokens existieren je einmal (packages) — nicht verdreifachen.
 5. Preview-HTML nur in **sandboxed iframe**; Legacy-HTML = untrusted input (sanitize → normalize).

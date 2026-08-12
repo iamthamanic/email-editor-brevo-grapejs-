@@ -9,17 +9,20 @@
     ".": "./src/index.ts"
   },
   "scripts": {
-    "typecheck": "tsc --noEmit"
+    "typecheck": "tsc --noEmit",
+    "test": "tsx --test src/**/*.test.ts"
   },
   "dependencies": {
     "@email-template/email-components": "*",
-    "@email-template/email-schema": "*"
+    "@email-template/email-schema": "*",
+    "@email-template/email-variables": "*"
   },
   "peerDependencies": {
     "grapesjs": "^0.22.0"
   },
   "devDependencies": {
     "grapesjs": "^0.22.9",
+    "tsx": "^4.19.3",
     "typescript": "^5.8.2"
   }
 }

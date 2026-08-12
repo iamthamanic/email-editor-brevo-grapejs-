@@ -26,7 +26,19 @@ const html = readFileSync(
 );
 
 function allBlocks(doc: NormalizedEmailDocument): EmailBlock[] {
-  return doc.children.flatMap((s) => s.columns.flatMap((c) => c.children));
+  const walk = (blocks: EmailBlock[]): EmailBlock[] => {
+    const out: EmailBlock[] = [];
+    for (const b of blocks) {
+      out.push(b);
+      if (b.type === "layout-row") {
+        out.push(...b.columns.flatMap((c) => walk(c.children)));
+      }
+    }
+    return out;
+  };
+  return doc.children.flatMap((s) =>
+    s.columns.flatMap((c) => walk(c.children)),
+  );
 }
 
 const REQUIRED_PARAMS = [
@@ -83,8 +95,12 @@ describe("P0 wrapped Brevo root + social greed", () => {
   it("NormalizedEmailDocument keeps all major sections and content", () => {
     const doc = parseBrevoHtml(html);
     assert.ok(
-      doc.children.length >= 5,
+      doc.children.length >= 4,
       `sections=${doc.children.length}`,
+    );
+    assert.equal(
+      doc.children.filter((s) => (s.role ?? "content") === "content").length,
+      1,
     );
 
     const blocks = allBlocks(doc);
@@ -208,7 +224,7 @@ describe("P0 wrapped Brevo root + social greed", () => {
   it("mapper emits multiple grapes components (not social-only)", () => {
     const doc = parseBrevoHtml(html);
     const components = normalizedEmailToGrapesComponents(doc);
-    assert.ok(components.length >= 5, `components=${components.length}`);
+    assert.ok(components.length >= 4, `components=${components.length}`);
     const types = components.map((c) => c.type);
     assert.ok(types.every((t) => t === "email-section"));
     const roles = components.map(
@@ -233,11 +249,16 @@ describe("P0 wrapped Brevo root + social greed", () => {
 
   it("full convert preserves inventory and never auto-approves social-only collapse", () => {
     const { document, components, report } = convertBrevoHtml(html);
-    assert.ok(document.children.length >= 5);
+    assert.ok(document.children.length >= 4);
+    assert.equal(
+      document.children.filter((s) => (s.role ?? "content") === "content")
+        .length,
+      1,
+    );
     assert.ok(report.richTextCount >= 3);
     assert.ok(report.imageCount >= 2);
     assert.equal(report.socialGroupCount, 1);
-    assert.ok(components.length >= 5);
+    assert.ok(components.length >= 4);
 
     for (const p of REQUIRED_PARAMS) {
       assert.ok(

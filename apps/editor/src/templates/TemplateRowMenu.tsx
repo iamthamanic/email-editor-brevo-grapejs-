@@ -1,5 +1,5 @@
 /**
- * Row overflow menu (⋯): Bearbeiten, Informationen, Löschen.
+ * Row overflow menu (⋯): Bearbeiten, Veröffentlichen, Duplizieren, Informationen, Löschen.
  * Renders the dropdown via portal + fixed coords so table overflow cannot clip it.
  * Location: apps/editor/src/templates/TemplateRowMenu.tsx
  */
@@ -8,15 +8,26 @@ import { useEffect, useLayoutEffect, useRef, useState } from "react";
 import { createPortal } from "react-dom";
 import { useNavigate } from "react-router";
 import type { EmailTemplateListItem } from "@email-template/email-schema";
-import { IconDots, IconEdit, IconInfo, IconTrash } from "./icons";
+import {
+  IconDots,
+  IconDuplicate,
+  IconEdit,
+  IconInfo,
+  IconPublish,
+  IconTrash,
+} from "./icons";
 
-const MENU_WIDTH = 180;
-const MENU_EST_HEIGHT = 140;
+const MENU_WIDTH = 220;
+const MENU_EST_HEIGHT = 280;
 
 interface TemplateRowMenuProps {
   item: EmailTemplateListItem;
-  deleting: boolean;
+  busy: boolean;
   onDelete: (item: EmailTemplateListItem) => void;
+  onDuplicate: (item: EmailTemplateListItem) => void;
+  onPublish: (item: EmailTemplateListItem) => void;
+  onResolveRemote: (item: EmailTemplateListItem) => void;
+  onResolveKeepLocal: (item: EmailTemplateListItem) => void;
   onOpenInfo: (item: EmailTemplateListItem) => void;
 }
 
@@ -40,11 +51,17 @@ function placeMenu(trigger: HTMLElement): MenuCoords {
 
 export function TemplateRowMenu({
   item,
-  deleting,
+  busy,
   onDelete,
+  onDuplicate,
+  onPublish,
+  onResolveRemote,
+  onResolveKeepLocal,
   onOpenInfo,
 }: TemplateRowMenuProps) {
   const navigate = useNavigate();
+  const inConflict =
+    item.status === "CONFLICT" || item.status === "REMOTE_CHANGED";
   const [open, setOpen] = useState(false);
   const [coords, setCoords] = useState<MenuCoords | null>(null);
   const triggerRef = useRef<HTMLButtonElement | null>(null);
@@ -99,7 +116,7 @@ export function TemplateRowMenu({
         aria-haspopup="menu"
         aria-expanded={open}
         data-testid="template-row-menu"
-        disabled={deleting}
+        disabled={busy}
         onClick={() => setOpen((v) => !v)}
       >
         <IconDots />
@@ -131,6 +148,64 @@ export function TemplateRowMenu({
               type="button"
               role="menuitem"
               className="tpl-menu-item"
+              data-testid="template-row-publish"
+              disabled={busy}
+              onClick={() => {
+                setOpen(false);
+                onPublish(item);
+              }}
+            >
+              <IconPublish />
+              Veröffentlichen
+            </button>
+            {inConflict && (
+              <>
+                <button
+                  type="button"
+                  role="menuitem"
+                  className="tpl-menu-item"
+                  data-testid="template-row-resolve-remote"
+                  disabled={busy}
+                  onClick={() => {
+                    setOpen(false);
+                    onResolveRemote(item);
+                  }}
+                >
+                  Remote übernehmen
+                </button>
+                <button
+                  type="button"
+                  role="menuitem"
+                  className="tpl-menu-item"
+                  data-testid="template-row-resolve-local"
+                  disabled={busy}
+                  onClick={() => {
+                    setOpen(false);
+                    onResolveKeepLocal(item);
+                  }}
+                >
+                  Lokal behalten
+                </button>
+              </>
+            )}
+            <button
+              type="button"
+              role="menuitem"
+              className="tpl-menu-item"
+              data-testid="template-row-duplicate"
+              disabled={busy}
+              onClick={() => {
+                setOpen(false);
+                onDuplicate(item);
+              }}
+            >
+              <IconDuplicate />
+              Duplizieren
+            </button>
+            <button
+              type="button"
+              role="menuitem"
+              className="tpl-menu-item"
               data-testid="template-row-info"
               onClick={() => {
                 setOpen(false);
@@ -145,7 +220,7 @@ export function TemplateRowMenu({
               role="menuitem"
               className="tpl-menu-item is-danger"
               data-testid="template-row-delete"
-              disabled={deleting}
+              disabled={busy}
               onClick={() => {
                 setOpen(false);
                 onDelete(item);

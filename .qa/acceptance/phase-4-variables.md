@@ -67,7 +67,7 @@ Roadmap: Phase 4 (Stufe A) — Variables. Variable Registry (Customer/Order/Invo
 
 - Package: `packages/email-variables` — registry (HVAI EmailParams+Mahnung), `toExpression`, `getSampleData`, `substituteParams`
 - API: `GET /api/variables`, `GET /api/preview/sample` (DevAuth + `email_templates.read`)
-- Editor: `VariablePicker`, `SamplePreview`, insert into email-text/heading/button
+- Editor: `VariablePicker`, `PreviewModal` (Sample via API), insert into email-text/heading/button
 - Tests: package unit + api data-source + E2E `phase-4-variables.spec.ts` (PASS)
 - Evidence: `.qa/evidence/phase-4-variables/`
 - Out of scope: ERP blocks, live ERP fetch, Brevo render, Publish, contact.*

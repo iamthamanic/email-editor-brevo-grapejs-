@@ -10,6 +10,9 @@ echo "==> email-template-service checks"
 echo "→ typecheck email-schema"
 npm run typecheck --workspace=@email-template/email-schema
 
+echo "→ unit tests email-schema"
+npm run test --workspace=@email-template/email-schema
+
 echo "→ typecheck email-components"
 npm run typecheck --workspace=@email-template/email-components
 
@@ -22,11 +25,17 @@ npm run typecheck --workspace=@email-template/legacy-importer
 echo "→ typecheck editor-core"
 npm run typecheck --workspace=@email-template/editor-core
 
+echo "→ unit tests editor-core"
+npm run test --workspace=@email-template/editor-core
+
 echo "→ typecheck api"
 npm run typecheck --workspace=@email-template/api
 
 echo "→ typecheck editor"
 npm run typecheck --workspace=@email-template/editor
+
+echo "→ unit tests editor"
+npm run test --workspace=@email-template/editor
 
 echo "→ unit tests api"
 npm run test --workspace=@email-template/api

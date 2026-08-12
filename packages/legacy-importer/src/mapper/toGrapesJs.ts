@@ -3,7 +3,7 @@
  * Location: packages/legacy-importer/src/mapper/toGrapesJs.ts
  */
 
-import { splitParamExpressions } from "@email-template/email-variables";
+import { replaceLegacyHashTokens, splitParamExpressions } from "@email-template/email-variables";
 import type {
   CompanyInformationBlock,
   EmailBlock,
@@ -34,6 +34,17 @@ function mapBlock(block: EmailBlock): GrapesComponentDef | GrapesComponentDef[] 
   switch (block.type) {
     case "rich-text": {
       const kids = richTextToGrapesComponents(block.html);
+      // Single HTML string → `content` (one RTE host). Component arrays stay in `components`.
+      if (typeof kids === "string") {
+        return {
+          type: "email-text",
+          attributes: {
+            "data-email-type": "email-text",
+            ...(block.role ? { "data-role": block.role } : {}),
+          },
+          content: kids,
+        };
+      }
       return {
         type: "email-text",
         attributes: {
@@ -52,15 +63,22 @@ function mapBlock(block: EmailBlock): GrapesComponentDef | GrapesComponentDef[] 
           alt: block.alt,
           ...(block.width ? { width: String(block.width) } : {}),
           ...(block.role ? { "data-role": block.role } : {}),
-          ...(block.alignment ? { align: block.alignment } : {}),
+          // Use data-align only — HTML align="left" becomes float:left in browsers
+          // and wraps following text beside wide footer logos.
+          ...(block.alignment ? { "data-align": block.alignment } : {}),
         },
         style: {
+          display: "block",
+          float: "none",
+          height: "auto",
           ...(block.width
             ? { width: `${block.width}px`, "max-width": "100%" }
             : { "max-width": "100%" }),
           ...(block.alignment === "center"
-            ? { display: "block", margin: "0 auto" }
-            : {}),
+            ? { margin: "0 auto" }
+            : block.alignment === "right"
+              ? { margin: "0 0 0 auto" }
+              : { margin: "0" }),
         },
       };
     case "button":
@@ -102,6 +120,31 @@ function mapBlock(block: EmailBlock): GrapesComponentDef | GrapesComponentDef[] 
       });
       return left;
     }
+    case "layout-row":
+      return {
+        type: "email-layout-row",
+        attributes: {
+          "data-email-type": "email-layout-row",
+          "data-layout": "columns",
+          "data-layout-cols": String(block.columns.length),
+          width: "100%",
+          cellpadding: "0",
+          cellspacing: "0",
+          border: "0",
+        },
+        style: {
+          width: "100%",
+          "border-collapse": "collapse",
+          "table-layout": "fixed",
+        },
+        components: [
+          {
+            type: "email-row",
+            attributes: { "data-email-type": "email-row" },
+            components: block.columns.map((c) => mapColumn(c)),
+          },
+        ],
+      };
     case "legacy-html":
       return {
         type: "email-legacy-html",
@@ -150,28 +193,42 @@ function mapSocial(block: SocialLinksBlock): GrapesComponentDef {
     attributes: {
       "data-email-type": "company-social",
       "data-social-items": itemsJson,
+      align: "center",
+    },
+    style: {
+      width: "100%",
+      "text-align": "center",
+      margin: "0 auto",
     },
     linkedinUrl: linkedin,
     xUrl: x,
     websiteUrl: website,
-    components: `<tbody><tr><td style="padding:16px;text-align:center;">${icons}</td></tr></tbody>`,
+    components: `<tbody><tr><td align="center" style="padding:16px;text-align:center;">${icons}</td></tr></tbody>`,
   };
 }
 
-function mapColumn(col: EmailColumn): GrapesComponentDef {
+function mapColumn(
+  col: EmailColumn,
+  opts?: { align?: "left" | "center" | "right"; padding?: string },
+): GrapesComponentDef {
   const inner = mapBlocks(col.children);
   const w = col.width || 100;
+  const align = opts?.align;
+  const pad = opts?.padding ?? "15px";
   return {
     type: "email-column",
+    columnWidth: w,
     attributes: {
       "data-email-type": "email-column",
       width: `${w}%`,
       valign: "top",
+      ...(align ? { align } : {}),
     },
     style: {
       width: `${w}%`,
       "vertical-align": "top",
-      padding: "8px",
+      padding: pad,
+      ...(align ? { "text-align": align } : {}),
     },
     components: inner.length
       ? inner
@@ -185,6 +242,21 @@ function mapColumn(col: EmailColumn): GrapesComponentDef {
   };
 }
 
+function mapColumnCentered(col: EmailColumn): GrapesComponentDef {
+  return mapColumn(col, { align: "center" });
+}
+
+/** Footer: left company (left), right certs (center) — Brevo 50/50. */
+function mapFooterColumn(col: EmailColumn, index: number, total: number): GrapesComponentDef {
+  if (total === 2) {
+    return mapColumn(col, {
+      align: index === 0 ? "left" : "center",
+      padding: "15px",
+    });
+  }
+  return mapColumn(col, { align: "left", padding: "15px" });
+}
+
 function mapSection(section: EmailSection): GrapesComponentDef {
   const role = normalizeSectionRole(section.role) ?? "content";
   const name = sectionDisplayName(role);
@@ -194,7 +266,11 @@ function mapSection(section: EmailSection): GrapesComponentDef {
 
   const padding =
     section.padding ??
-    (role === "header" ? "20px 16px 80px 16px" : "16px");
+    (role === "header"
+      ? "20px 16px 80px 16px"
+      : role === "footer"
+        ? "80px 15px 20px 15px"
+        : "16px");
 
   const sourceAttrs: Record<string, string> = {};
   if (section.source) {
@@ -220,6 +296,7 @@ function mapSection(section: EmailSection): GrapesComponentDef {
     style: {
       width: "100%",
       "border-collapse": "collapse",
+      "table-layout": "fixed",
       ...(section.backgroundColor
         ? { "background-color": section.backgroundColor }
         : {}),
@@ -229,7 +306,11 @@ function mapSection(section: EmailSection): GrapesComponentDef {
       {
         type: "email-row",
         attributes: { "data-email-type": "email-row" },
-        components: cols.map(mapColumn),
+        components: cols.map((c, i) => {
+          if (role === "social") return mapColumnCentered(c);
+          if (role === "footer") return mapFooterColumn(c, i, cols.length);
+          return mapColumn(c);
+        }),
       },
     ],
   };
@@ -244,7 +325,7 @@ export function normalizedEmailToGrapesComponents(
 /** Re-export for tests that still tokenize plain strings. */
 export function tokenizeParams(text: string): GrapesComponentDef[] {
   const out: GrapesComponentDef[] = [];
-  for (const part of splitParamExpressions(text)) {
+  for (const part of splitParamExpressions(replaceLegacyHashTokens(text))) {
     if (part.type === "text") {
       if (part.value) out.push({ type: "textnode", content: part.value });
     } else {

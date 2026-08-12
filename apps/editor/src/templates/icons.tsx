@@ -79,6 +79,48 @@ export function IconInfo({ className }: { className?: string }) {
   );
 }
 
+export function IconDuplicate({ className }: { className?: string }) {
+  return (
+    <svg className={className} width="16" height="16" viewBox="0 0 16 16" fill="none" aria-hidden>
+      <rect
+        x="5.5"
+        y="5.5"
+        width="8"
+        height="8"
+        rx="1.2"
+        stroke="currentColor"
+        strokeWidth="1.4"
+      />
+      <path
+        d="M10.5 5.5V3.7A1.2 1.2 0 0 0 9.3 2.5H3.7A1.2 1.2 0 0 0 2.5 3.7v5.6A1.2 1.2 0 0 0 3.7 10.5H5.5"
+        stroke="currentColor"
+        strokeWidth="1.4"
+        strokeLinejoin="round"
+      />
+    </svg>
+  );
+}
+
+export function IconPublish({ className }: { className?: string }) {
+  return (
+    <svg className={className} width="16" height="16" viewBox="0 0 16 16" fill="none" aria-hidden>
+      <path
+        d="M8 10.5V3.5M8 3.5 5.5 6M8 3.5 10.5 6"
+        stroke="currentColor"
+        strokeWidth="1.4"
+        strokeLinecap="round"
+        strokeLinejoin="round"
+      />
+      <path
+        d="M3 11.5v1A1.5 1.5 0 0 0 4.5 14h7A1.5 1.5 0 0 0 13 12.5v-1"
+        stroke="currentColor"
+        strokeWidth="1.4"
+        strokeLinecap="round"
+      />
+    </svg>
+  );
+}
+
 export function IconUndo(p: IconProps) {
   return (
     <Svg {...p}>
@@ -217,11 +259,12 @@ export function IconQuote(p: IconProps) {
   );
 }
 
+/** Clear formatting — struck-through T. */
 export function IconClearFormat(p: IconProps) {
   return (
     <Svg {...p}>
-      <path d="M5 5h10l-4 14H8.5" {...stroke} />
-      <path d="M8 11h7M15 19l4-4M19 19l-4-4" {...stroke} />
+      <path d="M6 5h12M12 5v14" {...stroke} />
+      <path d="M5 19 19 5" {...stroke} />
     </Svg>
   );
 }
@@ -311,11 +354,55 @@ export function IconChevronDown(p: IconProps) {
   );
 }
 
-export function IconColorText(p: IconProps) {
+export function IconRefresh(p: IconProps) {
   return (
     <Svg {...p}>
-      <path d="M5 19h14M8.5 15 12 5l3.5 10" {...stroke} />
-      <path d="M9.5 12h5" {...stroke} />
+      <path d="M21 12a9 9 0 1 1-2.6-6.3" {...stroke} />
+      <path d="M21 3v6h-6" {...stroke} />
+    </Svg>
+  );
+}
+
+export function IconColorText(
+  p: IconProps & { barColor?: string },
+) {
+  const { barColor = "#e11d2e", ...rest } = p;
+  return (
+    <Svg {...rest}>
+      <path d="M8.5 14.5 12 4.5l3.5 10" {...stroke} />
+      <path d="M9.4 11.5h5.2" {...stroke} />
+      {/* Fat color bar under the “A” (Word-style); default brand-strong red */}
+      <rect
+        x="3.5"
+        y="17"
+        width="17"
+        height="5"
+        rx="1.2"
+        fill={barColor}
+        stroke="none"
+      />
+    </Svg>
+  );
+}
+
+/** Marker / highlight icon with color bar (Texthintergrund). */
+export function IconColorHighlight(
+  p: IconProps & { barColor?: string },
+) {
+  const { barColor = "#ffe066", ...rest } = p;
+  return (
+    <Svg {...rest}>
+      <path d="M5 16 14.5 6.5a2.1 2.1 0 0 1 3 3L8 19H5v-3Z" {...stroke} />
+      <path d="m12.5 8.5 3 3" {...stroke} />
+      <rect
+        x="3.5"
+        y="19.5"
+        width="17"
+        height="3.5"
+        rx="1"
+        fill={barColor}
+        stroke="none"
+      />
     </Svg>
   );
 }

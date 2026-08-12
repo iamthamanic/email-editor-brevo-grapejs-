@@ -1,11 +1,22 @@
 /**
- * Sample preview data — Musterwerte, keine echten PII.
+ * Sample preview data + mock preview contacts — Musterwerte, keine echten PII.
  * Location: packages/email-variables/src/sample.ts
  */
 
 import { listVariableKeys } from "./registry.js";
 
 export type SampleData = Readonly<Record<string, string>>;
+
+export interface PreviewContact {
+  id: string;
+  /** Shown in the contact picker (DE UI). */
+  label: string;
+  email: string;
+  /** Customer number for display + search. */
+  kundenId: string;
+  /** Full params map for substituteParams. */
+  params: SampleData;
+}
 
 const SAMPLE: Record<string, string> = {
   anrede: "Herr",
@@ -85,11 +96,60 @@ const SAMPLE: Record<string, string> = {
   subject: "Ihre Bestellung HV-2026-0042",
 };
 
-export function getSampleData(): SampleData {
+function fillCatalog(overrides: Record<string, string>): SampleData {
   const keys = listVariableKeys();
   const out: Record<string, string> = {};
   for (const key of keys) {
-    out[key] = SAMPLE[key] ?? `Muster-${key}`;
+    out[key] = overrides[key] ?? SAMPLE[key] ?? `Muster-${key}`;
   }
   return out;
+}
+
+export function getSampleData(): SampleData {
+  return fillCatalog({});
+}
+
+/** Mock recipients for preview (no live CRM). Full param coverage. */
+export function listPreviewContacts(): PreviewContact[] {
+  const mustermann = fillCatalog({});
+  const schmidt = fillCatalog({
+    anrede: "Frau",
+    vorname: "Erika",
+    name: "Schmidt",
+    firma: "Schmidt Logistics UG",
+    email: "erika.schmidt@example.com",
+    kunden_id: "20881",
+    bestellnummer: "HV-2026-1190",
+    auftragsnummer: "HV-2026-1190",
+    adresse: "Beispielweg 12",
+    address: "Beispielweg 12",
+    plz: "80331",
+    postal_code: "80331",
+    stadt: "München",
+    "bwb.id": "BWB-11002",
+    rechnungsnummer: "RE-2026-2208",
+    rechnung: "RE-2026-2208",
+    subject: "Ihre Bestellung HV-2026-1190",
+  });
+
+  return [
+    {
+      id: "mock-mustermann",
+      label: "Max Mustermann",
+      email: mustermann.email ?? "max.mustermann@example.com",
+      kundenId: mustermann.kunden_id ?? "10042",
+      params: mustermann,
+    },
+    {
+      id: "mock-schmidt",
+      label: "Erika Schmidt",
+      email: schmidt.email ?? "erika.schmidt@example.com",
+      kundenId: schmidt.kunden_id ?? "20881",
+      params: schmidt,
+    },
+  ];
+}
+
+export function getPreviewContact(id: string): PreviewContact | undefined {
+  return listPreviewContacts().find((c) => c.id === id);
 }

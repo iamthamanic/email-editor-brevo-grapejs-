@@ -38,6 +38,25 @@ describe("sanitizeImageUrl", () => {
       "https://fallback",
     );
   });
+
+  it("allows local /api/assets paths", () => {
+    const path =
+      "/api/assets/aaaaaaaa-bbbb-cccc-dddd-eeeeeeeeeeee.png";
+    assert.equal(isAllowedImageUrl(path), true);
+    assert.equal(sanitizeImageUrl(path, "https://fallback"), path);
+    assert.equal(isAllowedImageUrl("/api/assets/../etc/passwd"), false);
+  });
+
+  it("allows only the trusted email-image placeholder data-URI", async () => {
+    const { EMAIL_IMAGE_PLACEHOLDER_SRC } = await import(
+      "./imagePlaceholder.js"
+    );
+    assert.equal(isAllowedImageUrl(EMAIL_IMAGE_PLACEHOLDER_SRC), true);
+    assert.equal(
+      isAllowedImageUrl("data:image/svg+xml;charset=utf-8,%3Csvg%3E"),
+      false,
+    );
+  });
 });
 
 describe("toPlainText", () => {

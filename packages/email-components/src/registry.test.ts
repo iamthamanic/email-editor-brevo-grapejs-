@@ -46,9 +46,12 @@ describe("EMAIL_COMPONENTS registry", () => {
 });
 
 describe("BRAND_DEFAULTS", () => {
-  it("exposes Musterfirma placeholders and default variant", () => {
-    assert.equal(BRAND_DEFAULTS.companyName, "Musterfirma GmbH");
+  it("exposes Halteverbot123 / Browo brand chrome and default variant", () => {
+    assert.equal(BRAND_DEFAULTS.companyName, "Browo GmbH");
     assert.equal(BRAND_DEFAULTS.variant, "default");
-    assert.ok(BRAND_DEFAULTS.website.startsWith("https://"));
+    assert.ok(BRAND_DEFAULTS.website.includes("halteverbot123"));
+    assert.ok(BRAND_DEFAULTS.logoSrc.startsWith("https://"));
+    assert.ok(BRAND_DEFAULTS.addressStreet.includes("Späth"));
+    assert.ok(BRAND_DEFAULTS.socialItems.length >= 3);
   });
 });

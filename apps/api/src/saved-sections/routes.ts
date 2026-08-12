@@ -17,6 +17,7 @@ import {
   createSavedSection,
   deleteSavedSection,
   getSavedSection,
+  harvestFromAllTemplates,
   listSavedSections,
   patchSavedSection,
 } from "./service.js";
@@ -92,6 +93,28 @@ export async function registerSavedSectionRoutes(
       }
     },
   );
+
+  /** One-shot / manual: harvest Textbausteine from all local templates. */
+  app.post("/api/saved-sections/harvest", async (request, reply) => {
+    if (
+      !requirePermission(request.user, "email_templates.manage_saved_sections")
+    ) {
+      return reply
+        .code(403)
+        .send(
+          fail(
+            ERROR_CODES.FORBIDDEN,
+            "Missing email_templates.manage_saved_sections.",
+          ),
+        );
+    }
+    try {
+      const data = await harvestFromAllTemplates();
+      return ok(data);
+    } catch (error) {
+      return handleError(error, reply);
+    }
+  });
 
   app.patch<{ Params: { id: string }; Body: PatchSavedSectionBody }>(
     "/api/saved-sections/:id",

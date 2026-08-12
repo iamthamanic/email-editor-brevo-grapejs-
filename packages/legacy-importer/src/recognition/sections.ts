@@ -20,6 +20,8 @@ import { tryFooterColumns, looksLikeCompanyFooterCell } from "./footer.js";
 import { isImageOnlyCell } from "./images.js";
 import { textOf } from "./richText.js";
 import { isSocialCluster, socialBlockFromElement } from "./social.js";
+import { findMultiColumnLayoutCells } from "./unwrap.js";
+import { coalesceContentCanvas } from "./coalesceContentCanvas.js";
 
 function isDecorativeRow(cells: Element[]): boolean {
   return cells.every(
@@ -50,12 +52,12 @@ function singleColumn(blocks: EmailBlock[], role?: string): EmailSection {
   );
 }
 
-function convertRow(
-  tr: Element,
+function convertCellsAsRow(
+  cells: Element[],
   index: number,
   total: number,
+  fallbackHtml?: string,
 ): EmailSection[] {
-  const cells = [...tr.querySelectorAll(":scope > th, :scope > td")];
   if (cells.length === 0) return [];
 
   if (isDecorativeRow(cells)) {
@@ -74,6 +76,14 @@ function convertRow(
   }
 
   const nearEnd = index >= Math.max(0, total - 2);
+
+  // Single outer cell that still wraps a real 50/50 (Brevo presentation chrome)
+  if (cells.length === 1 && nearEnd) {
+    const nested = findMultiColumnLayoutCells(cells[0]!);
+    if (nested && nested.length >= 2) {
+      return convertCellsAsRow(nested, index, total, fallbackHtml);
+    }
+  }
 
   if (cells.length === 2) {
     const footer = tryFooterColumns(cells, nearEnd);
@@ -108,20 +118,50 @@ function convertRow(
       width: widths[i] ?? Math.floor(100 / cells.length),
       children: convertCellContent(cell),
     }));
-    // Ensure no empty columns lose content — if all empty, legacy
     if (columns.every((c) => c.children.length === 0)) {
       return [
         singleColumn([
           {
             id: nextId("legacy"),
             type: "legacy-html",
-            html: tr.outerHTML,
+            html: fallbackHtml ?? cells.map((c) => c.outerHTML).join(""),
             reason: "empty-multi-column",
           },
         ]),
       ];
     }
-    return [sectionFromColumns(columns)];
+    // Near-end structural 50/50 with company+cert signals → footer even if
+    // tryFooterColumns heuristics were slightly short (after unwrap).
+    if (
+      nearEnd &&
+      columns.length === 2 &&
+      (widths[0] ?? 0) >= 40 &&
+      (widths[0] ?? 0) <= 60 &&
+      (widths[1] ?? 0) >= 40 &&
+      (widths[1] ?? 0) <= 60
+    ) {
+      const footer = tryFooterColumns(cells, true);
+      if (footer) {
+        return [
+          sectionFromColumns(
+            [
+              {
+                id: nextId("col"),
+                width: 50,
+                children: footer.left,
+              },
+              {
+                id: nextId("col"),
+                width: 50,
+                children: footer.right,
+              },
+            ],
+            "footer",
+          ),
+        ];
+      }
+    }
+    return [sectionFromColumns(columns, "content")];
   }
 
   // Single cell — first image-only row is semantic header
@@ -132,18 +172,17 @@ function convertRow(
     nearEnd &&
     looksLikeCompanyFooterCell(cell) &&
     !isSocialCluster(cell);
-  const role = isHeader ? "header" : isFooter ? "footer" : undefined;
+  // Always assign a section role (incl. content) for stable Grapes serialization
+  const role = isHeader ? "header" : isFooter ? "footer" : "content";
   const blocks = convertCellContent(cell, {
     role: isHeader ? "brand-logo" : undefined,
   });
   if (blocks.length === 0) return [];
-  // Tag first rich-text after logo as main-content loosely
   if (index === 1) {
     for (const b of blocks) {
       if (b.type === "rich-text" && !b.role) b.role = "main-content";
     }
   }
-  // Footer single-column: promote company/cert images when present
   if (isFooter) {
     const imgs = blocks.filter(
       (b): b is Extract<EmailBlock, { type: "image" }> => b.type === "image",
@@ -161,6 +200,22 @@ function convertRow(
     if (pad) section.padding = pad;
   }
   return [section];
+}
+
+function convertRow(
+  tr: Element,
+  index: number,
+  total: number,
+): EmailSection[] {
+  let cells = [...tr.querySelectorAll(":scope > th, :scope > td")];
+  // Brevo wraps real 50/50 rows in single-child presentation tables
+  if (cells.length <= 1) {
+    const unwrapped = findMultiColumnLayoutCells(tr);
+    if (unwrapped && unwrapped.length >= 2) {
+      cells = unwrapped;
+    }
+  }
+  return convertCellsAsRow(cells, index, total, tr.outerHTML);
 }
 
 /** Read CSS padding from cell / nested td when present. */
@@ -202,15 +257,19 @@ function convertSectionTable(
   index: number,
   total: number,
 ): EmailSection[] {
+  // Prefer unwrapping presentation chrome before treating outer tr as content
+  const layoutCells = findMultiColumnLayoutCells(table);
+  if (layoutCells && layoutCells.length >= 2) {
+    return convertCellsAsRow(layoutCells, index, total, table.outerHTML);
+  }
+
   const rows = directTableRows(table);
   if (rows.length === 0) {
-    // Rare: malformed table — treat table element as a cell surrogate
     return convertRow(table, index, total);
   }
   if (rows.length === 1) {
     return convertRow(rows[0]!, index, total);
   }
-  // Multi-row module → each row is its own section (legacy shape)
   const out: EmailSection[] = [];
   rows.forEach((tr, i) => {
     out.push(...convertRow(tr, index + i, total + rows.length));
@@ -275,7 +334,7 @@ export function recognizeDocument(
     );
   }
 
-  return {
+  return coalesceContentCanvas({
     version: 1,
     settings: {
       width: settings.width,
@@ -283,5 +342,5 @@ export function recognizeDocument(
     },
     children,
     metadata: { source },
-  };
+  });
 }

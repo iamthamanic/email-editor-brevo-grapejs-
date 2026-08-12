@@ -1,8 +1,8 @@
 /**
- * Auth adapter — hides identity source (dev stub vs future ERP tokens).
+ * Auth adapter — hides identity source (dev stub vs ERP JWT).
  * Location: apps/api/src/auth/dev-auth.ts
  *
- * Fail-closed: AUTH_MODE must be explicitly "dev" for the stub.
+ * Fail-closed: AUTH_MODE must be explicitly "dev" or "erp".
  * Unset / unknown modes → 401 (no default admin).
  */
 
@@ -13,6 +13,7 @@ import {
   type AuthUser,
   type Permission,
 } from "@email-template/email-schema";
+import { verifyErpHs256Jwt } from "./erpJwt.js";
 
 declare module "fastify" {
   interface FastifyRequest {
@@ -47,6 +48,10 @@ export function isDevAuthEnabled(): boolean {
   return getAuthMode() === "dev";
 }
 
+export function isErpAuthEnabled(): boolean {
+  return getAuthMode() === "erp";
+}
+
 export function isLoopbackHost(host: string): boolean {
   return (
     host === "127.0.0.1" ||
@@ -73,6 +78,21 @@ export function assertSafeDevBind(host: string): void {
   );
 }
 
+function bearerToken(request: FastifyRequest): string | null {
+  const header = request.headers.authorization;
+  if (!header || typeof header !== "string") return null;
+  const m = /^Bearer\s+(.+)$/i.exec(header.trim());
+  return m?.[1]?.trim() || null;
+}
+
+/** Unguessable UUID asset filenames — safe for public GET (canvas img src). */
+const PUBLIC_ASSET_PATH =
+  /^\/api\/assets\/[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}\.(jpg|png|gif|webp)$/i;
+
+function requestPathname(url: string): string {
+  return url.split("?")[0] ?? url;
+}
+
 export async function authHook(
   request: FastifyRequest,
   reply: FastifyReply,
@@ -81,10 +101,52 @@ export async function authHook(
     return;
   }
 
+  const pathname = requestPathname(request.url);
+
+  // Health stays public for probes
+  if (pathname === "/api/health") {
+    return;
+  }
+
+  // Canvas img src cannot send Authorization — capability URL by UUID name
+  if (request.method === "GET" && PUBLIC_ASSET_PATH.test(pathname)) {
+    return;
+  }
+
   if (isDevAuthEnabled()) {
-    // ponytail: fixed DevUser; swap for ERP JWT verify when AUTH_MODE=erp
     request.user = DEV_USER;
     return;
+  }
+
+  if (isErpAuthEnabled()) {
+    const secret = process.env.ERP_JWT_SECRET?.trim();
+    if (!secret) {
+      await reply
+        .code(500)
+        .send(
+          fail(
+            ERROR_CODES.INTERNAL,
+            "ERP auth misconfigured (ERP_JWT_SECRET).",
+          ),
+        );
+      return;
+    }
+    const token = bearerToken(request);
+    if (!token) {
+      await reply
+        .code(401)
+        .send(fail(ERROR_CODES.UNAUTHORIZED, "Bearer token required."));
+      return;
+    }
+    try {
+      request.user = verifyErpHs256Jwt(token, secret);
+      return;
+    } catch {
+      await reply
+        .code(401)
+        .send(fail(ERROR_CODES.UNAUTHORIZED, "Invalid or expired token."));
+      return;
+    }
   }
 
   await reply

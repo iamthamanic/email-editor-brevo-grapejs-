@@ -17,6 +17,7 @@ import type {
 import { normalizeSectionRole } from "../document.js";
 import { nextId, resetIds } from "../ids.js";
 import { convertCellContent } from "../recognition/cells.js";
+import { coalesceContentCanvas } from "../recognition/coalesceContentCanvas.js";
 import { stripBrevoNoise, stripUnsafe } from "./sanitize.js";
 
 export function hasEditorSectionMarkers(html: string): boolean {
@@ -135,6 +136,20 @@ function blocksFromColumn(td: Element): EmailBlock[] {
   if (marked.length > 0) {
     const out: EmailBlock[] = [];
     for (const el of marked) {
+      const type = el.getAttribute("data-email-type") ?? "";
+      if (type === "email-layout-row" || type.startsWith("email-columns-")) {
+        const rows = directRows(el);
+        const primary = rows[0];
+        const columns = primary
+          ? columnsFromRow(primary)
+          : [{ id: nextId("col"), width: 100, children: [] as EmailBlock[] }];
+        out.push({
+          id: nextId("lr"),
+          type: "layout-row",
+          columns,
+        });
+        continue;
+      }
       const b = blockFromNative(el);
       if (b) out.push(b);
     }
@@ -234,10 +249,10 @@ export function parseEditorNativeHtml(html: string): NormalizedEmailDocument {
           },
         ];
 
-  return {
+  return coalesceContentCanvas({
     version: 1,
     settings: { width: 600 },
     children,
     metadata: { source: "html" },
-  };
+  });
 }

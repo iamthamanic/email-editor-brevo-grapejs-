@@ -10,6 +10,7 @@ import {
   extractParamKeys,
   getSampleData,
   isKnownVariableKey,
+  listPreviewContacts,
   listVariableKeys,
   substituteParams,
   toExpression,
@@ -109,5 +110,21 @@ describe("getSampleData", () => {
       assert.ok(typeof sample[key] === "string");
     }
     assert.ok(sample.email?.endsWith("@example.com"));
+  });
+});
+
+describe("listPreviewContacts", () => {
+  it("exposes mock customers with full param maps", () => {
+    const contacts = listPreviewContacts();
+    assert.ok(contacts.length >= 2);
+    for (const c of contacts) {
+      assert.ok(c.id);
+      assert.ok(c.email.includes("@example.com"));
+      assert.ok(c.kundenId);
+      for (const key of listVariableKeys()) {
+        assert.ok(key in c.params, `${c.id} missing ${key}`);
+      }
+    }
+    assert.notEqual(contacts[0]!.params.vorname, contacts[1]!.params.vorname);
   });
 });

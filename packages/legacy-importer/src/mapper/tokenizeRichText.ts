@@ -11,12 +11,16 @@
  */
 
 import {
+  coalesceBrokenParamHtml,
   getVariable,
   PARAM_EXPR_GLOBAL,
+  replaceLegacyHashTokens,
   splitParamExpressions,
 } from "@email-template/email-variables";
 import { parseHTML } from "linkedom";
 import type { GrapesComponentDef } from "../types.js";
+
+export { coalesceBrokenParamHtml };
 
 const TEXT_NODE = 3;
 
@@ -66,6 +70,7 @@ function paramBadgeHtml(key: string): string {
 
 function tokenizeText(text: string): GrapesComponentDef[] {
   if (!text) return [];
+  text = replaceLegacyHashTokens(text);
   if (!PARAM_EXPR_GLOBAL.test(text)) {
     PARAM_EXPR_GLOBAL.lastIndex = 0;
     return [{ type: "textnode", content: text }];
@@ -87,7 +92,8 @@ function tokenizeText(text: string): GrapesComponentDef[] {
  * Leaves attributes and element structure untouched.
  */
 function replaceParamsInTextNode(textNode: Text, document: Document): void {
-  const text = textNode.textContent ?? "";
+  const text = replaceLegacyHashTokens(textNode.textContent ?? "");
+  if (text !== textNode.textContent) textNode.textContent = text;
   if (!/\{\{\s*params\./.test(text)) return;
 
   const parts = splitParamExpressions(text);
@@ -146,21 +152,29 @@ export function richTextToGrapesComponents(
   const trimmed = html.trim();
   if (!trimmed) return html;
 
+  const normalized = replaceLegacyHashTokens(trimmed);
+
   // Flat text (no tags) → component defs
-  if (!/<[a-z][\s\S]*>/i.test(trimmed)) {
-    const parts = tokenizeText(trimmed);
-    return parts.length ? parts : trimmed;
+  if (!/<[a-z][\s\S]*>/i.test(normalized)) {
+    const parts = tokenizeText(normalized);
+    return parts.length ? parts : normalized;
   }
 
-  // No params — keep HTML as-is
-  if (!/\{\{\s*params\./.test(trimmed) && !/data-param-key=/.test(trimmed)) {
-    return html;
+  // No params — keep HTML as-is (already hash-normalized)
+  if (
+    !/\{\{\s*params\./.test(normalized) &&
+    !/data-param-key=/.test(normalized)
+  ) {
+    const coalesced = coalesceBrokenParamHtml(
+      normalized === trimmed ? html : normalized,
+    );
+    return coalesced;
   }
 
-  const { document } = parseHTML(`<div id="__rt_root">${html}</div>`);
+  const { document } = parseHTML(`<div id="__rt_root">${normalized}</div>`);
   const root = document.getElementById("__rt_root");
-  if (!root) return html;
+  if (!root) return coalesceBrokenParamHtml(normalized);
 
   walkTextNodes(root, document);
-  return root.innerHTML;
+  return coalesceBrokenParamHtml(root.innerHTML);
 }

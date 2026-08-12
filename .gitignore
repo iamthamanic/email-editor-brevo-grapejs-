@@ -2,10 +2,14 @@ node_modules/
 dist/
 build/
 .env
+.env.*
+!.env.example
+apps/api/.env
 .env.local
 *.log
 .DS_Store
 coverage/
+apps/api/.data/
 .qa/evidence/
 .qa/test-results/
 playwright-report/

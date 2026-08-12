@@ -104,8 +104,8 @@ async function seedEditableText(page: Page, html: string) {
 }
 
 
-/** Double-click the selected/edited email-text to enter GrapesJS RTE. */
-async function enterRteViaDblClick(page: Page) {
+/** Click the content email-text to enter GrapesJS RTE. */
+async function enterRteViaClick(page: Page) {
   const frame = page.frameLocator("iframe").first();
   // Content section text — avoid header/footer placeholders
   const text = frame
@@ -114,7 +114,7 @@ async function enterRteViaDblClick(page: Page) {
     )
     .first();
   await expect(text).toBeVisible({ timeout: 10_000 });
-  await text.dblclick();
+  await text.click();
   await expect
     .poll(async () =>
       page.evaluate(() => {
@@ -227,7 +227,7 @@ test.describe("rich text global toolbar", () => {
     await waitForEditor(page);
 
     await seedEditableText(page, "Unsere Bestellnummer: Demo");
-    await enterRteViaDblClick(page);
+    await enterRteViaClick(page);
 
     const floatingVisible = await page.evaluate(() => {
       const ed = (window as Window & { __emailEditor?: EditorApi })
@@ -292,7 +292,7 @@ test.describe("rich text global toolbar", () => {
     await waitForEditor(page);
 
     await seedEditableText(page, "Zeile für Format");
-    await enterRteViaDblClick(page);
+    await enterRteViaClick(page);
     await selectSubstringInRte(page, "Zeile für Format");
 
     await setBlockType(page, "h2");

@@ -24,20 +24,13 @@ const fixture = readFileSync(
   "utf8",
 );
 
-const EXPECTED_ROLES = [
-  "header",
-  "content",
-  "content",
-  "content",
-  "footer",
-  "social",
-] as const;
+const EXPECTED_ROLES = ["header", "content", "footer", "social"] as const;
 
 function rolesOf(doc: { children: Array<{ role?: string }> }) {
   return doc.children.map((s) => s.role ?? "content");
 }
 
-/** Minimal Grapes-like export: sibling section tables (the collapse failure mode). */
+/** Minimal Grapes-like export: sibling section tables (legacy multi-content). */
 function grapesExportHtml(): string {
   return [
     `<table data-email-type="email-section" data-role="header" data-section-role="header" width="100%">
@@ -80,16 +73,18 @@ function grapesExportHtml(): string {
 }
 
 describe("editor-native HTML roundtrip preserves section ownership", () => {
-  it("Brevo parser collapses sibling sections — native path keeps roles", () => {
+  it("native path coalesces multi content into one canvas", () => {
     const html = grapesExportHtml();
     assert.equal(hasEditorSectionMarkers(html), true);
 
-    // Without native path this used to become a single content/legacy blob
-    const collapsed = parseBrevoHtml(html);
-    assert.notDeepEqual(rolesOf(collapsed), [...EXPECTED_ROLES]);
-
     const native = parseEditorNativeHtml(html);
     assert.deepEqual(rolesOf(native), [...EXPECTED_ROLES]);
+    const content = native.children.find((s) => s.role === "content")!;
+    assert.equal(content.columns.length, 1);
+    const texts = content.columns[0]!.children.filter(
+      (b) => b.type === "rich-text",
+    );
+    assert.equal(texts.length, 3);
 
     const viaConvert = convertBrevoHtml(html);
     assert.deepEqual(rolesOf(viaConvert.document), [...EXPECTED_ROLES]);
@@ -98,11 +93,6 @@ describe("editor-native HTML roundtrip preserves section ownership", () => {
         (c) => (c.attributes as Record<string, string>)?.["data-role"],
       ),
       [...EXPECTED_ROLES],
-    );
-    assert.ok(
-      viaConvert.components.every(
-        (c) => (c as { sectionRole?: string }).sectionRole,
-      ),
     );
 
     const footer = viaConvert.document.children.find((s) => s.role === "footer")!;
@@ -121,7 +111,7 @@ describe("editor-native HTML roundtrip preserves section ownership", () => {
     );
   });
 
-  it("golden production: mapper emits sectionRole + nested ownership", () => {
+  it("golden production: mapper emits single content canvas + chrome", () => {
     const doc = parseBrevoHtml(fixture);
     assert.deepEqual(rolesOf(doc), [...EXPECTED_ROLES]);
     const comps = normalizedEmailToGrapesComponents(doc);

@@ -1,0 +1,186 @@
+{
+  "__etsImport": 1,
+  "components": [
+    {
+      "type": "email-section",
+      "sectionRole": "header",
+      "attributes": {
+        "data-email-type": "email-section",
+        "data-role": "header",
+        "data-section-role": "header"
+      },
+      "name": "Header",
+      "components": [
+        {
+          "type": "email-row",
+          "components": [
+            {
+              "type": "email-column",
+              "components": [
+                {
+                  "type": "email-image",
+                  "attributes": {
+                    "data-email-type": "email-image",
+                    "src": "https://placehold.co/200x48/275073/ffffff?text=Logo",
+                    "alt": "Logo"
+                  }
+                }
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "type": "email-section",
+      "sectionRole": "content",
+      "attributes": {
+        "data-email-type": "email-section",
+        "data-role": "content",
+        "data-section-role": "content"
+      },
+      "name": "Inhalt A",
+      "components": [
+        {
+          "type": "email-row",
+          "components": [
+            {
+              "type": "email-column",
+              "components": [
+                {
+                  "type": "email-text",
+                  "attributes": { "data-email-type": "email-text" },
+                  "content": "<p>CanvasBlock Alpha — erster Inhaltsblock.</p>"
+                }
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "type": "email-section",
+      "sectionRole": "content",
+      "attributes": {
+        "data-email-type": "email-section",
+        "data-role": "content",
+        "data-section-role": "content",
+        "data-layout": "columns",
+        "data-layout-cols": "2"
+      },
+      "name": "Inhalt B zweispaltig",
+      "components": [
+        {
+          "type": "email-row",
+          "components": [
+            {
+              "type": "email-column",
+              "columnWidth": 50,
+              "attributes": { "width": "50%" },
+              "components": [
+                {
+                  "type": "email-text",
+                  "attributes": { "data-email-type": "email-text" },
+                  "content": "<p>CanvasBlock Beta Links.</p>"
+                }
+              ]
+            },
+            {
+              "type": "email-column",
+              "columnWidth": 50,
+              "attributes": { "width": "50%" },
+              "components": [
+                {
+                  "type": "email-text",
+                  "attributes": { "data-email-type": "email-text" },
+                  "content": "<p>CanvasBlock Beta Rechts.</p>"
+                }
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "type": "email-section",
+      "sectionRole": "content",
+      "attributes": {
+        "data-email-type": "email-section",
+        "data-role": "content",
+        "data-section-role": "content"
+      },
+      "name": "Inhalt C",
+      "components": [
+        {
+          "type": "email-row",
+          "components": [
+            {
+              "type": "email-column",
+              "components": [
+                {
+                  "type": "email-text",
+                  "attributes": { "data-email-type": "email-text" },
+                  "content": "<p>CanvasBlock Gamma — dritter Inhaltsblock.</p>"
+                }
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "type": "email-section",
+      "sectionRole": "footer",
+      "attributes": {
+        "data-email-type": "email-section",
+        "data-role": "footer",
+        "data-section-role": "footer"
+      },
+      "name": "Footer",
+      "components": [
+        {
+          "type": "email-row",
+          "components": [
+            {
+              "type": "email-column",
+              "components": [
+                {
+                  "type": "email-text",
+                  "attributes": { "data-email-type": "email-text" },
+                  "content": "<p>Footer Chrome</p>"
+                }
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "type": "email-section",
+      "sectionRole": "social",
+      "attributes": {
+        "data-email-type": "email-section",
+        "data-role": "social",
+        "data-section-role": "social"
+      },
+      "name": "Social Media",
+      "components": [
+        {
+          "type": "email-row",
+          "components": [
+            {
+              "type": "email-column",
+              "components": [
+                {
+                  "type": "email-text",
+                  "attributes": { "data-email-type": "email-text" },
+                  "content": "<p>Social Chrome</p>"
+                }
+              ]
+            }
+          ]
+        }
+      ]
+    }
+  ]
+}

@@ -8,21 +8,40 @@ import { Link, useParams } from "react-router";
 import {
   applyDefaultStarter,
   createEmailEditor,
-  getProjectData,
+  getSyncedHtml,
+  getSyncedProjectData,
+  migrateCanvasLayout,
   migrateLegacyLayout,
   type Editor,
 } from "@email-template/editor-core";
-import type { EmailTemplateDto } from "@email-template/email-schema";
+import type { BrevoSenderDto, EmailTemplateDto } from "@email-template/email-schema";
+import type { Component } from "grapesjs";
 import {
   convertTemplate,
+  fetchBrevoSenders,
   fetchTemplate,
+  migrateBrevoEditor,
   patchTemplate,
+  publishTemplate,
+  resolveSyncConflict,
 } from "../api/templatesApi";
-import { SamplePreview } from "../variables/SamplePreview";
+import { PreviewModal } from "../variables/PreviewModal";
+import { buildPublishHtml } from "../variables/previewDoc";
+import { ComposeSubjectField } from "../compose/ComposeSubjectField";
+import { installCaretBookmarkTracking } from "../variables/insertVariable";
 import { EditorToolbar } from "./EditorToolbar";
+import {
+  insertIntoEmptyColumn,
+  wireEmptyColumnInsert,
+} from "./emptyColumnInsert";
+import { EmptyColumnInsertModal } from "./EmptyColumnInsertModal";
+import { MigrationBanner } from "./MigrationBanner";
+import { wireOpenTraitsModal } from "./openTraitsOnSelect";
+import { SenderSearchSelect } from "./SenderSearchSelect";
 import { TraitsModal } from "./TraitsModal";
 
 type SaveState = "idle" | "saving" | "saved" | "failed";
+type PublishState = "idle" | "publishing" | "published" | "failed";
 
 const AUTOSAVE_MS = 1500;
 const META_DEBOUNCE_MS = 600;
@@ -38,6 +57,17 @@ function importComponentsFrom(data: Record<string, unknown>) {
   return null;
 }
 
+function applyEditorData(editor: Editor, data: Record<string, unknown>) {
+  const imported = importComponentsFrom(data);
+  if (imported) {
+    editor.setComponents(imported as object[]);
+  } else if (Object.keys(data).length > 0) {
+    editor.loadProjectData(data);
+  }
+  migrateLegacyLayout(editor);
+  migrateCanvasLayout(editor);
+}
+
 export function TemplateEditorPage() {
   const { id } = useParams<{ id: string }>();
   const canvasRef = useRef<HTMLDivElement | null>(null);
@@ -46,29 +76,55 @@ export function TemplateEditorPage() {
   const templateRef = useRef<EmailTemplateDto | null>(null);
   const saveTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
   const metaTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
+  const senderEmailRef = useRef("");
+  const senderNameRef = useRef("");
 
   const [template, setTemplate] = useState<EmailTemplateDto | null>(null);
   const [name, setName] = useState("");
   const [subject, setSubject] = useState("");
+  const [senderEmail, setSenderEmail] = useState("");
+  const [senderName, setSenderName] = useState("");
+  const [senders, setSenders] = useState<BrevoSenderDto[]>([]);
+  const [sendersLoading, setSendersLoading] = useState(false);
+  const [sendersRefreshing, setSendersRefreshing] = useState(false);
+  const [sendersError, setSendersError] = useState<string | null>(null);
+  const [sendersHint, setSendersHint] = useState<string | null>(null);
   const [loadError, setLoadError] = useState<string | null>(null);
   const [saveState, setSaveState] = useState<SaveState>("idle");
   const [saveError, setSaveError] = useState<string | null>(null);
+  const [publishState, setPublishState] = useState<PublishState>("idle");
+  const [publishError, setPublishError] = useState<string | null>(null);
+  const [publishInfo, setPublishInfo] = useState<string | null>(null);
   const [editorReady, setEditorReady] = useState(false);
   const [previewOpen, setPreviewOpen] = useState(false);
   const [codeOpen, setCodeOpen] = useState(false);
   const [codeHtml, setCodeHtml] = useState("");
   const [traitsOpen, setTraitsOpen] = useState(false);
+  const [emptyColumn, setEmptyColumn] = useState<Component | null>(null);
   const [preparing, setPreparing] = useState(false);
+  const [migrating, setMigrating] = useState(false);
+  const [migrationError, setMigrationError] = useState<string | null>(null);
 
   useEffect(() => {
     templateRef.current = template;
   }, [template]);
 
   useEffect(() => {
+    senderEmailRef.current = senderEmail;
+  }, [senderEmail]);
+
+  useEffect(() => {
+    senderNameRef.current = senderName;
+  }, [senderName]);
+
+  useEffect(() => {
     if (!id) return;
 
     let cancelled = false;
     let editor: Editor | null = null;
+    let unwireTraits: (() => void) | undefined;
+    let unwireEmptyCol: (() => void) | undefined;
+    let unwireCaretBookmark: (() => void) | undefined;
 
     async function boot() {
       try {
@@ -105,6 +161,8 @@ export function TemplateEditorPage() {
         templateRef.current = data;
         setName(data.name);
         setSubject(data.subject ?? "");
+        setSenderEmail(data.senderEmail ?? "");
+        setSenderName(data.senderName ?? "");
         setLoadError(null);
 
         editor = createEmailEditor({
@@ -115,8 +173,14 @@ export function TemplateEditorPage() {
         editorRef.current = editor;
         setEditorReady(true);
         if (import.meta.env.DEV) {
-          (window as Window & { __emailEditor?: Editor }).__emailEditor = editor;
+          const w = window as Window & {
+            __emailEditor?: Editor;
+            __etsMigrateCanvasLayout?: typeof migrateCanvasLayout;
+          };
+          w.__emailEditor = editor;
+          w.__etsMigrateCanvasLayout = migrateCanvasLayout;
         }
+        unwireCaretBookmark = installCaretBookmarkTracking(editor);
 
         editor.on("update", () => {
           if (saveTimerRef.current) clearTimeout(saveTimerRef.current);
@@ -125,10 +189,9 @@ export function TemplateEditorPage() {
           }, AUTOSAVE_MS);
         });
 
-        editor.on("component:selected", (component) => {
-          if (String(component?.get?.("type") ?? "") === "email-param") {
-            setTraitsOpen(true);
-          }
+        unwireTraits = wireOpenTraitsModal(editor, () => setTraitsOpen(true));
+        unwireEmptyCol = wireEmptyColumnInsert(editor, (col) => {
+          setEmptyColumn(col);
         });
       } catch (err: unknown) {
         if (!cancelled) {
@@ -159,7 +222,7 @@ export function TemplateEditorPage() {
       try {
         const updated = await patchTemplate(id, {
           expectedRevision: current.revision,
-          editorData: getProjectData(ed),
+          editorData: await getSyncedProjectData(ed),
         });
         setTemplate(updated);
         templateRef.current = updated;
@@ -177,27 +240,109 @@ export function TemplateEditorPage() {
       setEditorReady(false);
       if (saveTimerRef.current) clearTimeout(saveTimerRef.current);
       if (metaTimerRef.current) clearTimeout(metaTimerRef.current);
+      unwireCaretBookmark?.();
+      unwireEmptyCol?.();
+      unwireTraits?.();
       editor?.destroy();
       editorRef.current = null;
     };
   }, [id]);
 
-  function scheduleMetaSave(nextName: string, nextSubject: string) {
+  async function loadSenders(opts?: { refresh?: boolean }) {
+    const refresh = Boolean(opts?.refresh);
+    if (refresh) setSendersRefreshing(true);
+    else setSendersLoading(true);
+    setSendersError(null);
+    if (!refresh) setSendersHint(null);
+    try {
+      const list = await fetchBrevoSenders();
+      setSenders(list);
+      if (refresh) {
+        setSendersHint(
+          list.length === 1
+            ? "1 Absender von Brevo geladen"
+            : `${list.length} Absender von Brevo geladen`,
+        );
+      }
+
+      // New / empty templates: default to first active Brevo sender.
+      const current = templateRef.current;
+      if (
+        current &&
+        id &&
+        !current.senderEmail?.trim() &&
+        list.some((s) => s.active)
+      ) {
+        const pick =
+          list.find((s) => s.active) ?? list[0] ?? null;
+        if (pick) {
+          setSenderEmail(pick.email);
+          setSenderName(pick.name);
+          try {
+            const ed = editorRef.current;
+            const updated = await patchTemplate(id, {
+              expectedRevision: current.revision,
+              senderEmail: pick.email,
+              senderName: pick.name || null,
+              ...(ed ? { editorData: await getSyncedProjectData(ed) } : {}),
+            });
+            setTemplate(updated);
+            templateRef.current = updated;
+            setSaveState("saved");
+          } catch {
+            // Keep UI selection; user can retry via dropdown
+          }
+        }
+      }
+    } catch (err: unknown) {
+      setSendersError(
+        err instanceof Error
+          ? err.message
+          : "Absender konnten nicht geladen werden",
+      );
+    } finally {
+      setSendersLoading(false);
+      setSendersRefreshing(false);
+    }
+  }
+
+  useEffect(() => {
+    if (!template?.id) return;
+    void loadSenders();
+  }, [template?.id]);
+
+  useEffect(() => {
+    if (!sendersHint) return;
+    const t = setTimeout(() => setSendersHint(null), 3500);
+    return () => clearTimeout(t);
+  }, [sendersHint]);
+
+  function scheduleMetaSave(
+    nextName: string,
+    nextSubject: string,
+    nextSenderName?: string,
+  ) {
     if (metaTimerRef.current) clearTimeout(metaTimerRef.current);
     metaTimerRef.current = setTimeout(() => {
       const current = templateRef.current;
       const ed = editorRef.current;
       if (!current || !ed || !id) return;
       const trimmedName = nextName.trim() || current.name;
+      const senderNameToSave =
+        nextSenderName !== undefined
+          ? nextSenderName.trim() || null
+          : senderNameRef.current.trim() || null;
       void (async () => {
         setSaveState("saving");
         setSaveError(null);
         try {
           const updated = await patchTemplate(id, {
             expectedRevision: current.revision,
-            editorData: getProjectData(ed),
+            editorData: await getSyncedProjectData(ed),
             name: trimmedName,
             subject: nextSubject.trim() || null,
+            senderEmail: senderEmailRef.current.trim() || null,
+            senderName: senderNameToSave,
           });
           setTemplate(updated);
           templateRef.current = updated;
@@ -212,6 +357,41 @@ export function TemplateEditorPage() {
     }, META_DEBOUNCE_MS);
   }
 
+  function handleSenderNameChange(next: string) {
+    setSenderName(next);
+    scheduleMetaSave(name, subject, next);
+  }
+
+  async function handleSenderChange(sender: BrevoSenderDto | null) {
+    const current = templateRef.current;
+    if (!current || !id) return;
+    const nextEmail = sender?.email.trim().toLowerCase() ?? "";
+    const nextName = sender?.name.trim() ?? "";
+    setSenderEmail(nextEmail);
+    setSenderName(nextName);
+    senderEmailRef.current = nextEmail;
+    senderNameRef.current = nextName;
+    setSaveState("saving");
+    setSaveError(null);
+    try {
+      const ed = editorRef.current;
+      const updated = await patchTemplate(id, {
+        expectedRevision: current.revision,
+        senderEmail: nextEmail || null,
+        senderName: nextName || null,
+        ...(ed ? { editorData: await getSyncedProjectData(ed) } : {}),
+      });
+      setTemplate(updated);
+      templateRef.current = updated;
+      setSaveState("saved");
+    } catch (err: unknown) {
+      setSaveState("failed");
+      setSaveError(
+        err instanceof Error ? err.message : "Absender speichern fehlgeschlagen",
+      );
+    }
+  }
+
   const saveLabel =
     saveState === "saving"
       ? "Speichern…"
@@ -221,17 +401,118 @@ export function TemplateEditorPage() {
           ? "Speichern fehlgeschlagen"
           : "Bereit";
 
+  async function handlePublish() {
+    const current = templateRef.current;
+    const ed = editorRef.current;
+    if (!current || !ed || !id) return;
+
+    const subjectTrim = subject.trim();
+    if (!subjectTrim) {
+      setPublishState("failed");
+      setPublishError("Bitte zuerst einen Betreff eingeben.");
+      setPublishInfo(null);
+      return;
+    }
+    if (!senderEmail.trim()) {
+      setPublishState("failed");
+      setPublishError("Bitte zuerst einen Absender wählen.");
+      setPublishInfo(null);
+      return;
+    }
+
+    // Flush pending autosave timers so revision matches canvas.
+    if (saveTimerRef.current) {
+      clearTimeout(saveTimerRef.current);
+      saveTimerRef.current = null;
+    }
+    if (metaTimerRef.current) {
+      clearTimeout(metaTimerRef.current);
+      metaTimerRef.current = null;
+    }
+
+    setPublishState("publishing");
+    setPublishError(null);
+    setPublishInfo(null);
+
+    try {
+      // Persist latest canvas before publish (revision bump).
+      const saved = await patchTemplate(id, {
+        expectedRevision: current.revision,
+        editorData: await getSyncedProjectData(ed),
+        name: name.trim() || current.name,
+        subject: subjectTrim,
+        senderEmail: senderEmail.trim() || null,
+        senderName: senderName.trim() || null,
+      });
+      setTemplate(saved);
+      templateRef.current = saved;
+      setSaveState("saved");
+
+      const html = buildPublishHtml(await getSyncedHtml(ed), ed.getCss() ?? "");
+      const result = await publishTemplate(id, {
+        expectedRevision: saved.revision,
+        html,
+        editorData: await getSyncedProjectData(ed),
+        subject: subjectTrim,
+        name: name.trim() || saved.name,
+      });
+
+      setTemplate(result.template);
+      templateRef.current = result.template;
+      setPublishState("published");
+      setPublishInfo(
+        result.created
+          ? `In Brevo angelegt (#${result.brevoTemplateId}).`
+          : `In Brevo aktualisiert (#${result.brevoTemplateId}).`,
+      );
+    } catch (err: unknown) {
+      setPublishState("failed");
+      setPublishError(
+        err instanceof Error ? err.message : "Veröffentlichen fehlgeschlagen",
+      );
+    }
+  }
+
+  const publishLabel =
+    publishState === "publishing"
+      ? "Veröffentlichen…"
+      : publishState === "published"
+        ? "Veröffentlicht"
+        : "Veröffentlichen";
+
   return (
     <div className="page ed-form-page">
       <div className="ed-form" data-testid="template-form-editor">
         <header className="ed-form-header">
-          <div className="ed-form-header-left">
+          <div
+            className="ed-form-header-left"
+            onKeyDown={(e) => {
+              if (
+                (e.metaKey || e.ctrlKey) &&
+                ["a", "z", "y"].includes(e.key.toLowerCase())
+              ) {
+                e.stopPropagation();
+              }
+            }}
+          >
             <Link to="/" className="ed-back">
               ← Templates
             </Link>
-            <h1 className="ed-form-title">
-              {template?.name ? "Template bearbeiten" : "Neues Template"}
-            </h1>
+            <label className="ed-form-title-field">
+              <span className="ed-form-title-label">Template-Name</span>
+              <input
+                className="ed-form-title-input"
+                value={name}
+                title={name.trim() || undefined}
+                onChange={(e) => {
+                  const v = e.target.value;
+                  setName(v);
+                  scheduleMetaSave(v, subject);
+                }}
+                placeholder="Template-Name eingeben"
+                maxLength={120}
+              />
+            </label>
           </div>
           <div className="ed-form-header-right">
             <span
@@ -243,17 +524,43 @@ export function TemplateEditorPage() {
             <button
               type="button"
               className={`ed-btn-ghost${previewOpen ? " is-active" : ""}`}
-              onClick={() => setPreviewOpen((v) => !v)}
+              onClick={() => setPreviewOpen(true)}
               aria-pressed={previewOpen}
+              disabled={!editorReady}
+              title={
+                editorReady
+                  ? "Vorschau mit Beispieldaten"
+                  : "Editor wird noch geladen"
+              }
             >
               Vorschau
             </button>
-            <Link to="/" className="ed-btn-primary" aria-label="Schließen">
+            <button
+              type="button"
+              className="ed-btn-primary"
+              onClick={() => void handlePublish()}
+              disabled={!editorReady || publishState === "publishing"}
+              title="HTML nach Brevo veröffentlichen (Create/Update)"
+              data-testid="template-publish-btn"
+            >
+              {publishLabel}
+            </button>
+            <Link to="/" className="ed-btn-ghost" aria-label="Zur Liste">
               Fertig
             </Link>
           </div>
         </header>
 
+        {publishError && (
+          <div className="ed-banner ed-banner-error" role="alert">
+            <p className="error">{publishError}</p>
+          </div>
+        )}
+        {publishInfo && !publishError && (
+          <div className="ed-banner ed-banner-ok" role="status">
+            <p>{publishInfo}</p>
+          </div>
+        )}
         {loadError && (
           <div className="ed-banner ed-banner-error" role="alert">
             <p className="error">{loadError}</p>
@@ -267,6 +574,107 @@ export function TemplateEditorPage() {
             <p>Template wird vorbereitet…</p>
           </div>
         )}
+        {template?.migrationRequired && !loadError ? (
+          <MigrationBanner
+            busy={migrating}
+            error={migrationError}
+            onMigrate={() => {
+              void (async () => {
+                if (!id) return;
+                setMigrating(true);
+                setMigrationError(null);
+                try {
+                  const result = await migrateBrevoEditor(id);
+                  setTemplate(result.template);
+                  templateRef.current = result.template;
+                  const ed = editorRef.current;
+                  if (ed) {
+                    applyEditorData(ed, result.template.editorData);
+                  }
+                } catch (err: unknown) {
+                  setMigrationError(
+                    err instanceof Error
+                      ? err.message
+                      : "Aktualisierung fehlgeschlagen",
+                  );
+                } finally {
+                  setMigrating(false);
+                }
+              })();
+            }}
+          />
+        ) : null}
+        {(template?.status === "CONFLICT" ||
+          template?.status === "REMOTE_CHANGED") &&
+        !loadError ? (
+          <div
+            className="ed-banner ed-banner-migration"
+            role="status"
+            aria-live="polite"
+            data-testid="sync-conflict-banner"
+          >
+            <div className="ed-banner-migration-body">
+              <p>
+                Sync-Konflikt: Brevo hat eine neuere Version, lokale Änderungen
+                wurden nicht überschrieben.
+              </p>
+            </div>
+            <button
+              type="button"
+              className="ed-btn-primary"
+              data-testid="conflict-accept-remote"
+              onClick={() => {
+                void (async () => {
+                  if (!template) return;
+                  try {
+                    const updated = await resolveSyncConflict(template.id, {
+                      action: "accept_remote",
+                      expectedRevision: template.revision,
+                    });
+                    setTemplate(updated);
+                    templateRef.current = updated;
+                    const ed = editorRef.current;
+                    if (ed) applyEditorData(ed, updated.editorData);
+                  } catch (err: unknown) {
+                    setSaveError(
+                      err instanceof Error
+                        ? err.message
+                        : "Remote übernehmen fehlgeschlagen",
+                    );
+                  }
+                })();
+              }}
+            >
+              Remote übernehmen
+            </button>
+            <button
+              type="button"
+              className="btn-secondary"
+              data-testid="conflict-keep-local"
+              onClick={() => {
+                void (async () => {
+                  if (!template) return;
+                  try {
+                    const updated = await resolveSyncConflict(template.id, {
+                      action: "keep_local",
+                      expectedRevision: template.revision,
+                    });
+                    setTemplate(updated);
+                    templateRef.current = updated;
+                  } catch (err: unknown) {
+                    setSaveError(
+                      err instanceof Error
+                        ? err.message
+                        : "Lokal behalten fehlgeschlagen",
+                    );
+                  }
+                })();
+              }}
+            >
+              Lokal behalten
+            </button>
+          </div>
+        ) : null}
         {saveError && (
           <p className="error ed-banner" role="alert">
             {saveError}
@@ -275,35 +683,46 @@ export function TemplateEditorPage() {
 
         {!loadError && (
         <>
-        <div className="ed-form-fields">
-          <label className="field">
-            <span className="field-label">Template-Name</span>
-            <input
-              className="field-input"
-              value={name}
-              onChange={(e) => {
-                const v = e.target.value;
-                setName(v);
-                scheduleMetaSave(v, subject);
-              }}
-              placeholder="Template-Name eingeben"
-              maxLength={120}
+        <div
+          className="ed-form-fields ed-form-fields--single"
+          onKeyDown={(e) => {
+            if (
+              (e.metaKey || e.ctrlKey) &&
+              ["a", "z", "y"].includes(e.key.toLowerCase())
+            ) {
+              e.stopPropagation();
+            }
+          }}
+        >
+          <div className="field">
+            <span className="field-label">Absender</span>
+            <SenderSearchSelect
+              senders={senders}
+              valueEmail={senderEmail}
+              valueName={senderName}
+              onChange={(s) => void handleSenderChange(s)}
+              onNameChange={handleSenderNameChange}
+              onRefresh={() => void loadSenders({ refresh: true })}
+              disabled={!editorReady}
+              loading={sendersLoading}
+              refreshing={sendersRefreshing}
+              error={sendersError}
+              statusHint={sendersHint}
             />
-          </label>
-          <label className="field">
+          </div>
+          <div className="field">
             <span className="field-label">E-Mail-Betreff</span>
-            <input
-              className="field-input"
+            <ComposeSubjectField
               value={subject}
-              onChange={(e) => {
-                const v = e.target.value;
+              onChange={(v) => {
                 setSubject(v);
                 scheduleMetaSave(name, v);
               }}
+              mode="edit"
+              disabled={!editorReady}
               placeholder="Betreff eingeben"
-              maxLength={200}
             />
-          </label>
+          </div>
         </div>
 
         <div className="ed-form-body">
@@ -318,8 +737,10 @@ export function TemplateEditorPage() {
                   return;
                 }
                 if (!codeOpen) {
-                  setCodeHtml(ed.getHtml());
-                  setCodeOpen(true);
+                  void getSyncedHtml(ed).then((html) => {
+                    setCodeHtml(html);
+                    setCodeOpen(true);
+                  });
                   return;
                 }
                 // Empty HTML → default starter (header/content/footer), no convert API
@@ -347,6 +768,7 @@ export function TemplateEditorPage() {
                       ed.loadProjectData(result.template.editorData);
                     }
                     migrateLegacyLayout(ed);
+                    migrateCanvasLayout(ed);
                     setSaveError(null);
                     setCodeOpen(false);
                   } catch (err: unknown) {
@@ -380,21 +802,36 @@ export function TemplateEditorPage() {
                 </div>
               )}
             </div>
-            {previewOpen && (
-              <div className="ed-preview-drawer">
-                <SamplePreview
-                  editor={editorReady ? editorRef.current : null}
-                  defaultEnabled
-                />
-              </div>
-            )}
           </section>
         </div>
+
+        <PreviewModal
+          open={previewOpen}
+          onClose={() => setPreviewOpen(false)}
+          editor={editorReady ? editorRef.current : null}
+          templateId={id!}
+          subject={subject}
+          senderName={senderName || template?.senderName}
+          senderEmail={senderEmail || template?.senderEmail}
+          brevoTemplateId={template?.brevoTemplateId}
+        />
 
         <TraitsModal
           open={traitsOpen}
           onClose={() => setTraitsOpen(false)}
           traitsRef={traitsRef}
+        />
+        <EmptyColumnInsertModal
+          open={Boolean(emptyColumn)}
+          onClose={() => setEmptyColumn(null)}
+          onPick={(kind) => {
+            const ed = editorRef.current;
+            const col = emptyColumn;
+            setEmptyColumn(null);
+            if (!ed || !col) return;
+            const inserted = insertIntoEmptyColumn(ed, col, kind);
+            if (kind === "image" && inserted) setTraitsOpen(true);
+          }}
         />
         </>
         )}

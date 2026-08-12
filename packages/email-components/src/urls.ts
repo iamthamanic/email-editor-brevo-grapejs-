@@ -3,8 +3,13 @@
  * Location: packages/email-components/src/urls.ts
  */
 
+import { EMAIL_IMAGE_PLACEHOLDER_SRC } from "./imagePlaceholder.js";
+
 const LINK_PROTOCOLS = new Set(["http:", "https:", "mailto:", "tel:"]);
 const IMAGE_PROTOCOLS = new Set(["http:", "https:"]);
+
+/** Same-origin editor asset path served by API (vite proxies /api). */
+const LOCAL_ASSET_PATH = /^\/api\/assets\/[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}\.(jpg|png|gif|webp)$/i;
 
 export function isAllowedLinkUrl(raw: string): boolean {
   const trimmed = raw.trim();
@@ -20,6 +25,9 @@ export function isAllowedLinkUrl(raw: string): boolean {
 export function isAllowedImageUrl(raw: string): boolean {
   const trimmed = raw.trim();
   if (!trimmed) return false;
+  // Exact editor starter artwork only — arbitrary data: URLs stay blocked.
+  if (trimmed === EMAIL_IMAGE_PLACEHOLDER_SRC) return true;
+  if (LOCAL_ASSET_PATH.test(trimmed)) return true;
   try {
     const url = new URL(trimmed);
     return IMAGE_PROTOCOLS.has(url.protocol);

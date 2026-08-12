@@ -84,8 +84,15 @@ test("variable picker inserts params expression and sample preview", async ({
   });
 
   await page.getByRole("button", { name: "Vorschau" }).click();
-  await page.getByLabel("Beispieldaten").check();
-  const frame = page.locator(".sample-preview-frame");
+  const modal = page.getByTestId("preview-modal");
+  await expect(modal).toBeVisible({ timeout: 10_000 });
+  await expect(page.getByTestId("preview-tab-preview")).toBeVisible();
+  await expect(page.getByTestId("preview-tab-send-test")).toBeVisible();
+
+  const modalWidth = await modal.evaluate((el) => el.getBoundingClientRect().width);
+  expect(modalWidth).toBeGreaterThan(900);
+
+  const frame = page.getByTestId("preview-frame");
   await expect(frame).toBeVisible({ timeout: 10_000 });
 
   const previewHasSample = await frame.evaluate((el) => {
@@ -93,6 +100,32 @@ test("variable picker inserts params expression and sample preview", async ({
     return iframe.srcdoc.includes("Max");
   });
   expect(previewHasSample).toBe(true);
+
+  await expect
+    .poll(async () =>
+      frame.evaluate((el) => {
+        const iframe = el as HTMLIFrameElement;
+        return iframe.srcdoc.includes("ets-preview-canvas");
+      }),
+    )
+    .toBe(true);
+
+  await page.getByTestId("preview-contact-mock-schmidt").click();
+  await expect
+    .poll(async () =>
+      frame.evaluate((el) => {
+        const iframe = el as HTMLIFrameElement;
+        return iframe.srcdoc.includes("Erika");
+      }),
+    )
+    .toBe(true);
+
+  await modal.getByRole("button", { name: "Mobil" }).click();
+  await expect(page.locator(".ed-preview-frame-wrap.is-mobile")).toBeVisible();
+
+  await page.getByTestId("preview-tab-send-test").click();
+  await expect(page.getByTestId("preview-send-panel")).toBeVisible();
+  await expect(page.getByTestId("preview-send-emails")).toBeVisible();
 
   const projectStillHasTag = await page.evaluate(() => {
     const ed = (

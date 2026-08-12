@@ -22,6 +22,7 @@ export type EmailBlock =
   | SpacerBlock
   | DividerBlock
   | SocialLinksBlock
+  | LayoutRowBlock
   /** @deprecated Prefer image + rich-text blocks inside footer columns. */
   | CompanyInformationBlock
   /** @deprecated Prefer section role=footer with columns. */
@@ -60,6 +61,13 @@ export interface EmailColumn {
   /** Percent width 1–100 when known. */
   width: number;
   children: EmailBlock[];
+}
+
+/** Nested multi-column layout inside the single content canvas. */
+export interface LayoutRowBlock {
+  id: string;
+  type: "layout-row";
+  columns: EmailColumn[];
 }
 
 export interface RichTextBlock {
@@ -130,6 +138,8 @@ export interface CompanyInformationBlock {
   email?: string;
   website?: string;
   logoSrc?: string;
+  /** Pixel width from source <img width> (Brevo footers use ~200–229). */
+  logoWidth?: number;
 }
 
 /** @deprecated Prefer section role=footer. */

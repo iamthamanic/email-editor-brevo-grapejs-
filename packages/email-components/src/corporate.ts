@@ -5,12 +5,11 @@
  */
 
 import type { Component, Editor } from "grapesjs";
-import { BRAND_DEFAULTS, EMAIL_COLORS } from "./brandDefaults.js";
+import { BRAND_DEFAULTS, EMAIL_COLORS, EMAIL_FONT_STACK } from "./brandDefaults.js";
 import { escapeHtml, sanitizeAltText, toPlainText } from "./text.js";
 import { sanitizeImageUrl, sanitizeLinkUrl } from "./urls.js";
 
-const FONT =
-  "Arial, Helvetica, sans-serif";
+const FONT = EMAIL_FONT_STACK;
 
 function ensureDefaultVariant(model: Component): void {
   const v = String(model.get("variant") ?? BRAND_DEFAULTS.variant);
@@ -117,7 +116,7 @@ function socialHtml(linkedin: string, xUrl: string, website: string): string {
   const linkStyle = `color:${EMAIL_COLORS.primary};text-decoration:underline;font-family:${FONT};font-size:14px;`;
   return `
     <tr>
-      <td style="padding:16px;">
+      <td align="center" style="padding:16px;text-align:center;">
         <a href="${escapeHtml(linkedin)}" style="${linkStyle}">LinkedIn</a>
         &nbsp;|&nbsp;
         <a href="${escapeHtml(xUrl)}" style="${linkStyle}">X</a>
@@ -143,12 +142,12 @@ function socialIconsHtml(items: SocialIconItem[]): string {
       const img = item.imageSrc
         ? `<img src="${escapeHtml(sanitizeImageUrl(item.imageSrc, ""))}" alt="${label}" width="32" height="32" style="display:inline-block;border:0;" />`
         : label;
-      return `<a href="${escapeHtml(href)}" target="_blank" rel="noopener noreferrer" style="display:inline-block;margin:0 6px;">${img}</a>`;
+      return `<a href="${escapeHtml(href)}" target="_blank" rel="noopener noreferrer" style="display:inline-block;margin:0 8px;vertical-align:middle;">${img}</a>`;
     })
     .join("");
   return `
     <tr>
-      <td style="padding:16px;text-align:center;">
+      <td align="center" style="padding:16px;text-align:center;">
         ${icons}
       </td>
     </tr>
@@ -478,6 +477,21 @@ export function registerCorporateComponents(editor: Editor): void {
             BRAND_DEFAULTS.website,
           ),
         ),
+        attributes: {
+          "data-email-type": "company-social",
+          variant: BRAND_DEFAULTS.variant,
+          width: "100%",
+          cellpadding: "0",
+          cellspacing: "0",
+          border: "0",
+          align: "center",
+        },
+        style: {
+          width: "100%",
+          "border-collapse": "collapse",
+          "text-align": "center",
+          margin: "0 auto",
+        },
         droppable: false,
         editable: false,
         linkedinUrl: BRAND_DEFAULTS.linkedinUrl,

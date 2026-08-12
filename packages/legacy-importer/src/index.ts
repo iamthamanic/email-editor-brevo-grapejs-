@@ -10,7 +10,17 @@ export {
   parseEditorNativeHtml,
 } from "./parser/parseEditorNativeHtml.js";
 export { normalizedEmailToGrapesComponents } from "./mapper/toGrapesJs.js";
+export {
+  coalesceBrokenParamHtml,
+  paramBadge,
+  paramDisplayLabel,
+  richTextToGrapesComponents,
+} from "./mapper/tokenizeRichText.js";
 export { sanitizeRichHtml } from "./parser/sanitize.js";
+export {
+  grapesComponentsToPublishHtml,
+  serializeGrapesComponent,
+} from "./serializeGrapesHtml.js";
 
 export type {
   ConversionReport,

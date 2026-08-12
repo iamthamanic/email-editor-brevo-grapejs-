@@ -12,10 +12,15 @@ import type {
 import {
   createTemplate,
   deleteTemplate,
+  duplicateTemplate,
+  fetchTemplate,
   fetchTemplates,
+  publishTemplate,
+  resolveSyncConflict,
   syncBrevoTemplates,
 } from "../api/templatesApi";
 import { IconEdit } from "./icons";
+import { renderEditorDataToPublishHtml } from "./renderEditorDataHtml";
 import { TemplateInfoModal } from "./TemplateInfoModal";
 import { TemplateRowMenu } from "./TemplateRowMenu";
 
@@ -62,6 +67,42 @@ function formatUpdatedAt(iso: string): string {
   }
 }
 
+/** Exact copy time incl. seconds (de-DE). */
+function formatCopiedAt(iso: string): string {
+  try {
+    return new Intl.DateTimeFormat("de-DE", {
+      day: "2-digit",
+      month: "2-digit",
+      year: "numeric",
+      hour: "2-digit",
+      minute: "2-digit",
+      second: "2-digit",
+      hour12: false,
+    }).format(new Date(iso));
+  } catch {
+    return iso;
+  }
+}
+
+function isCopyName(name: string): boolean {
+  const trimmed = name.trim();
+  return /^\(Kopie\b/i.test(trimmed) || /\(Kopie\)\s*$/i.test(trimmed);
+}
+
+/** Copies pinned to top (newest first); others by updatedAt. */
+function sortListItems(
+  a: EmailTemplateListItem,
+  b: EmailTemplateListItem,
+): number {
+  const aCopy = isCopyName(a.name);
+  const bCopy = isCopyName(b.name);
+  if (aCopy !== bCopy) return aCopy ? -1 : 1;
+  if (aCopy && bCopy) {
+    return b.createdAt.localeCompare(a.createdAt);
+  }
+  return b.updatedAt.localeCompare(a.updatedAt);
+}
+
 function stopRowNav(e: SyntheticEvent): void {
   e.stopPropagation();
 }
@@ -96,7 +137,10 @@ export function TemplateListPage() {
   const [page, setPage] = useState(1);
   const [selectedIds, setSelectedIds] = useState<string[]>([]);
   const [deleting, setDeleting] = useState(false);
+  const [duplicating, setDuplicating] = useState(false);
+  const [publishing, setPublishing] = useState(false);
   const [infoItem, setInfoItem] = useState<EmailTemplateListItem | null>(null);
+  const [actionInfo, setActionInfo] = useState<string | null>(null);
 
   useEffect(() => {
     let cancelled = false;
@@ -121,11 +165,13 @@ export function TemplateListPage() {
     };
   }, []);
 
-  const filtered = items.filter((item) => {
-    if (!matchesQuery(item, search)) return false;
-    if (statusFilter !== "ALL" && item.status !== statusFilter) return false;
-    return true;
-  });
+  const filtered = items
+    .filter((item) => {
+      if (!matchesQuery(item, search)) return false;
+      if (statusFilter !== "ALL" && item.status !== statusFilter) return false;
+      return true;
+    })
+    .sort(sortListItems);
   const filteredIds = filtered.map((item) => item.id);
   const selectedInView = selectedIds.filter((id) => filteredIds.includes(id));
   const allFilteredSelected =
@@ -188,8 +234,17 @@ export function TemplateListPage() {
         result.errors.length > 0
           ? ` · ${result.errors.length} Hinweis(e)`
           : "";
+      const tb =
+        typeof result.textbausteineCreated === "number" &&
+        result.textbausteineCreated > 0
+          ? ` · ${result.textbausteineCreated} Textbausteine`
+          : "";
+      const conflictHint =
+        typeof result.conflicts === "number" && result.conflicts > 0
+          ? ` · ${result.conflicts} Konflikt(e)`
+          : "";
       setSyncInfo(
-        `Brevo: ${result.fetched} geladen · ${result.created} neu · ${result.updated} aktualisiert · ${result.converted} konvertiert · ${result.skipped} übersprungen${errHint}`,
+        `Brevo: ${result.fetched} geladen · ${result.created} neu · ${result.updated} aktualisiert · ${result.converted} konvertiert · ${result.skipped} übersprungen${tb}${conflictHint}${errHint}`,
       );
     } catch (err: unknown) {
       setError(
@@ -197,6 +252,39 @@ export function TemplateListPage() {
       );
     } finally {
       setSyncing(false);
+    }
+  }
+
+  async function handleResolveSync(
+    item: EmailTemplateListItem,
+    action: "accept_remote" | "keep_local",
+  ): Promise<void> {
+    if (deleting || duplicating || publishing) return;
+    const label =
+      action === "accept_remote"
+        ? "Remote-Version aus Brevo übernehmen und lokale Änderungen verwerfen?"
+        : "Lokale Version behalten und Remote-Konflikt verwerfen? (Publish nötig, um Brevo zu aktualisieren)";
+    if (!window.confirm(label)) return;
+    setPublishing(true);
+    setError(null);
+    setActionInfo(null);
+    try {
+      const updated = await resolveSyncConflict(item.id, {
+        action,
+        expectedRevision: item.revision,
+      });
+      await reloadList();
+      setActionInfo(
+        action === "accept_remote"
+          ? `„${updated.name}“: Remote übernommen.`
+          : `„${updated.name}“: Lokal behalten (Status DRAFT).`,
+      );
+    } catch (err: unknown) {
+      setError(
+        err instanceof Error ? err.message : "Konflikt lösen fehlgeschlagen",
+      );
+    } finally {
+      setPublishing(false);
     }
   }
 
@@ -217,7 +305,7 @@ export function TemplateListPage() {
   }
 
   async function handleDeleteOne(item: EmailTemplateListItem): Promise<void> {
-    if (deleting) return;
+    if (deleting || duplicating || publishing) return;
     const okConfirm = window.confirm(
       `Template „${item.name}“ wirklich löschen?`,
     );
@@ -225,6 +313,7 @@ export function TemplateListPage() {
 
     setDeleting(true);
     setError(null);
+    setActionInfo(null);
     try {
       await deleteTemplate(item.id);
       await reloadList();
@@ -235,8 +324,68 @@ export function TemplateListPage() {
     }
   }
 
+  async function handleDuplicate(item: EmailTemplateListItem): Promise<void> {
+    if (deleting || duplicating || publishing) return;
+    setDuplicating(true);
+    setError(null);
+    setActionInfo(null);
+    try {
+      await duplicateTemplate(item.id);
+      await reloadList();
+      setPage(1);
+    } catch (err: unknown) {
+      setError(
+        err instanceof Error ? err.message : "Duplizieren fehlgeschlagen",
+      );
+    } finally {
+      setDuplicating(false);
+    }
+  }
+
+  async function handlePublish(item: EmailTemplateListItem): Promise<void> {
+    if (deleting || duplicating || publishing) return;
+    const okConfirm = window.confirm(
+      `Template „${item.name}“ jetzt nach Brevo veröffentlichen?`,
+    );
+    if (!okConfirm) return;
+
+    setPublishing(true);
+    setError(null);
+    setActionInfo(null);
+    try {
+      const full = await fetchTemplate(item.id);
+      if (!full.subject?.trim()) {
+        throw new Error(
+          "Betreff fehlt — bitte im Editor setzen und erneut veröffentlichen.",
+        );
+      }
+      const html = await renderEditorDataToPublishHtml(full.editorData);
+      const result = await publishTemplate(full.id, {
+        expectedRevision: full.revision,
+        html,
+        editorData: full.editorData,
+        subject: full.subject,
+        name: full.name,
+      });
+      await reloadList();
+      setActionInfo(
+        result.created
+          ? `„${full.name}“ in Brevo angelegt (#${result.brevoTemplateId}).`
+          : `„${full.name}“ in Brevo aktualisiert (#${result.brevoTemplateId}).`,
+      );
+    } catch (err: unknown) {
+      setError(
+        err instanceof Error ? err.message : "Veröffentlichen fehlgeschlagen",
+      );
+    } finally {
+      setPublishing(false);
+    }
+  }
+
   async function handleBulkDelete(): Promise<void> {
-    if (deleting || selectedInView.length === 0) return;
+    if (deleting || duplicating || publishing || selectedInView.length === 0) {
+      return;
+    }
     const count = selectedInView.length;
     const okConfirm = window.confirm(
       count === 1
@@ -268,10 +417,12 @@ export function TemplateListPage() {
     <div className="page tpl-list-page">
       <header className="page-header">
         <div>
-          <p className="eyebrow">Halteverbot · Brevo</p>
           <h1>E-Mail Templates</h1>
         </div>
         <div className="page-header-actions">
+          <Link className="btn-secondary" to="/email-editor">
+            E-Mail schreiben
+          </Link>
           <button
             type="button"
             className="btn-secondary"
@@ -300,6 +451,15 @@ export function TemplateListPage() {
       {syncInfo && !error && (
         <p className="muted" role="status" data-testid="brevo-sync-status">
           {syncInfo}
+        </p>
+      )}
+      {actionInfo && !error && (
+        <p
+          className="muted"
+          role="status"
+          data-testid="template-list-action-info"
+        >
+          {actionInfo}
         </p>
       )}
       {error && (
@@ -449,9 +609,12 @@ export function TemplateListPage() {
                 const selected = selectedIds.includes(item.id);
                 const brevoId = item.brevoTemplateId?.trim() ?? "";
                 const updatedText = formatUpdatedAt(item.updatedAt);
+                const copy = isCopyName(item.name);
                 const metaParts = [
                   brevoId ? `#${brevoId}` : null,
-                  `Zuletzt bearbeitet am ${updatedText}`,
+                  copy
+                    ? `Kopiert am ${formatCopiedAt(item.createdAt)}`
+                    : `Zuletzt bearbeitet am ${updatedText}`,
                 ].filter(Boolean);
                 return (
                   <li
@@ -505,8 +668,16 @@ export function TemplateListPage() {
                       </Link>
                       <TemplateRowMenu
                         item={item}
-                        deleting={deleting}
+                        busy={deleting || duplicating || publishing}
                         onDelete={(row) => void handleDeleteOne(row)}
+                        onDuplicate={(row) => void handleDuplicate(row)}
+                        onPublish={(row) => void handlePublish(row)}
+                        onResolveRemote={(row) =>
+                          void handleResolveSync(row, "accept_remote")
+                        }
+                        onResolveKeepLocal={(row) =>
+                          void handleResolveSync(row, "keep_local")
+                        }
                         onOpenInfo={setInfoItem}
                       />
                     </div>

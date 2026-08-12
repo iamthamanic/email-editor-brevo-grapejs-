@@ -23,7 +23,19 @@ function load(name: string): string {
 }
 
 function allBlocks(doc: NormalizedEmailDocument): EmailBlock[] {
-  return doc.children.flatMap((s) => s.columns.flatMap((c) => c.children));
+  const walk = (blocks: EmailBlock[]): EmailBlock[] => {
+    const out: EmailBlock[] = [];
+    for (const b of blocks) {
+      out.push(b);
+      if (b.type === "layout-row") {
+        out.push(...b.columns.flatMap((c) => walk(c.children)));
+      }
+    }
+    return out;
+  };
+  return doc.children.flatMap((s) =>
+    s.columns.flatMap((c) => walk(c.children)),
+  );
 }
 
 function assertPreservation(html: string): void {
@@ -51,6 +63,13 @@ describe("tokenizeParams", () => {
       parts[0]?.attributes?.["data-param-key"],
       "polizei.vorgangsnummer",
     );
+  });
+
+  it("rewrites legacy hash tokens to param badges", () => {
+    const parts = tokenizeParams("Hallo #KUNDE_NAME#, Nr #BESTELLNR#");
+    assert.equal(parts[1]?.type, "email-param");
+    assert.equal(parts[1]?.attributes?.["data-param-key"], "name");
+    assert.equal(parts[3]?.attributes?.["data-param-key"], "bestellnummer");
   });
 });
 
@@ -108,13 +127,16 @@ describe("logo header", () => {
 });
 
 describe("two columns", () => {
-  it("builds 50/50 section columns", () => {
+  it("builds 50/50 as layout-row inside single content canvas", () => {
     const { document } = convertBrevoHtml(load("two-columns.html"));
     assert.equal(document.children.length, 1);
     const sec = document.children[0]!;
-    assert.equal(sec.columns.length, 2);
-    assert.equal(sec.columns[0]?.width, 50);
-    assert.equal(sec.columns[1]?.width, 50);
+    assert.equal(sec.columns.length, 1);
+    const row = sec.columns[0]!.children.find((b) => b.type === "layout-row");
+    assert.ok(row && row.type === "layout-row");
+    assert.equal(row.columns.length, 2);
+    assert.equal(row.columns[0]?.width, 50);
+    assert.equal(row.columns[1]?.width, 50);
     const json = JSON.stringify(document);
     assert.match(json, /params\.stadt|stadt/);
   });
@@ -185,10 +207,15 @@ describe("convertBrevoHtml simple-brevo", () => {
   it("converts fixture into email blocks and preserves params/images/links", () => {
     const fixture = load("simple-brevo.html");
     const { components, report, document } = convertBrevoHtml(fixture);
-    assert.ok(components.length >= 3);
-    assert.ok(document.children.length >= 3);
+    assert.ok(components.length >= 2);
+    assert.ok(document.children.length >= 2);
+    assert.equal(
+      document.children.filter((s) => (s.role ?? "content") === "content")
+        .length,
+      1,
+    );
     const json = JSON.stringify(components);
-    assert.match(json, /email-image|email-text|email-section|email-columns/);
+    assert.match(json, /email-image|email-text|email-section|email-layout-row/);
     assert.match(json, /vorname|params\.vorname/);
     assert.match(json, /bestellnummer/);
     assert.match(json, /logo\.png/);

@@ -14,6 +14,8 @@ export interface RichTextFormatState {
   underline: boolean;
   strike: boolean;
   blockType: RichTextBlockType;
+  /** px size from selection; 0 = unknown / mixed */
+  fontSize: number;
   alignment: RichTextAlign;
   orderedList: boolean;
   unorderedList: boolean;
@@ -28,6 +30,7 @@ export const IDLE_RICH_TEXT_STATE: RichTextFormatState = {
   underline: false,
   strike: false,
   blockType: "p",
+  fontSize: 0,
   alignment: "",
   orderedList: false,
   unorderedList: false,
@@ -47,10 +50,16 @@ export type RichTextCommand =
   | "justifyFull"
   | "removeFormat"
   | "link"
-  | "unlink"
-  | "quote";
+  | "unlink";
 
 export type RichTextRunArg =
   | RichTextCommand
   | { type: "block"; tag: RichTextBlockType }
-  | { type: "foreColor"; color: string };
+  | { type: "foreColor"; color: string }
+  | { type: "hiliteColor"; color: string }
+  | { type: "fontSize"; sizePx: number };
+
+/** Common email-safe sizes shown in the toolbar. */
+export const RICH_TEXT_FONT_SIZES = [
+  12, 14, 16, 18, 20, 24, 28, 32,
+] as const;

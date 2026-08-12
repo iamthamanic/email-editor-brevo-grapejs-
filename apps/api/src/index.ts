@@ -11,9 +11,12 @@ import {
   authHook,
   getAuthMode,
 } from "./auth/dev-auth.js";
+import { registerAssetRoutes } from "./assets/routes.js";
 import { registerSavedSectionRoutes } from "./saved-sections/routes.js";
 import { registerTemplateRoutes } from "./templates/routes.js";
 import { registerVariableRoutes } from "./variables/routes.js";
+import { registerComposeRoutes } from "./compose/routes.js";
+import { originCheckHook } from "./security/originCheck.js";
 
 const PORT = Number(process.env.API_PORT ?? 3001);
 const HOST = process.env.API_HOST ?? "127.0.0.1";
@@ -27,12 +30,17 @@ async function main(): Promise<void> {
   app.addHook("onRequest", async (request, reply) => {
     reply.header("Access-Control-Allow-Origin", EDITOR_ORIGIN);
     reply.header("Access-Control-Allow-Methods", "GET,POST,PATCH,DELETE,OPTIONS");
-    reply.header("Access-Control-Allow-Headers", "Content-Type");
+    reply.header(
+      "Access-Control-Allow-Headers",
+      "Content-Type, Authorization",
+    );
+    reply.header("X-Content-Type-Options", "nosniff");
     if (request.method === "OPTIONS") {
       return reply.code(204).send();
     }
   });
 
+  app.addHook("preHandler", originCheckHook);
   app.addHook("preHandler", authHook);
 
   app.get("/api/health", async () => ({
@@ -46,6 +54,8 @@ async function main(): Promise<void> {
   await registerTemplateRoutes(app);
   await registerVariableRoutes(app);
   await registerSavedSectionRoutes(app);
+  await registerComposeRoutes(app);
+  await registerAssetRoutes(app);
 
   await app.listen({ port: PORT, host: HOST });
   console.info(

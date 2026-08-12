@@ -23,9 +23,12 @@ export function TraitsModal({ open, onClose, traitsRef }: TraitsModalProps) {
 
   return (
     <div
-      className="modal-backdrop"
+      className={`modal-backdrop${open ? " is-open" : ""}`}
       role="presentation"
-      hidden={!open}
+      aria-hidden={!open}
+      // Keep mounted for GrapesJS TraitManager; hide with CSS (not [hidden])
+      // so custom trait views still update while closed.
+      style={{ display: open ? undefined : "none" }}
       onMouseDown={(e) => {
         if (e.target === e.currentTarget) onClose();
       }}

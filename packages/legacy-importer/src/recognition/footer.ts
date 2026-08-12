@@ -3,6 +3,8 @@
  * Location: packages/legacy-importer/src/recognition/footer.ts
  *
  * Footer is a section role — content is normal image + rich-text blocks (no monolith).
+ * Layout matches Brevo: left = logo (real px width) + contact | right = cert image(s).
+ * Contact lines stay compact (Brevo-like line-height, no spacer blocks between lines).
  */
 
 import type {
@@ -12,7 +14,7 @@ import type {
   RichTextBlock,
 } from "../document.js";
 import { nextId } from "../ids.js";
-import { imageFromElement } from "./images.js";
+import { imageFromElement, imagesFromCell } from "./images.js";
 import { textOf } from "./richText.js";
 
 const CONTACT_HINT =
@@ -26,11 +28,28 @@ function escapeHtml(s: string): string {
     .replace(/"/g, "&quot;");
 }
 
-export function extractCompanyInfo(cell: Element): CompanyInformationBlock {
-  const lines = (cell.textContent ?? "")
-    .split(/\n|•|\|/)
+function parsePx(raw: string | null | undefined): number | undefined {
+  if (!raw) return undefined;
+  const n = Number.parseInt(raw, 10);
+  return Number.isFinite(n) && n > 0 ? n : undefined;
+}
+
+/** Prefer <p> lines (Brevo); fall back to soft-split textContent. */
+function contactLinesFromCell(cell: Element): string[] {
+  const paragraphs = [...cell.querySelectorAll("p")]
+    .map((p) => textOf(p).replace(/\u00a0/g, " ").trim())
+    .filter((t) => t.length > 0 && t !== " ");
+  if (paragraphs.length >= 2) return paragraphs;
+
+  const raw = (cell.textContent ?? "").replace(/\u00a0/g, " ");
+  return raw
+    .split(/\n+|•|\|/)
     .map((l) => l.replace(/\s+/g, " ").trim())
     .filter(Boolean);
+}
+
+export function extractCompanyInfo(cell: Element): CompanyInformationBlock {
+  const lines = contactLinesFromCell(cell);
   const logo = cell.querySelector("img");
   let phone: string | undefined;
   let email: string | undefined;
@@ -43,22 +62,37 @@ export function extractCompanyInfo(cell: Element): CompanyInformationBlock {
   }
   for (const line of lines) {
     if (!email && /@/.test(line) && !/\s/.test(line)) email = line;
-    if (!phone && /\+?\d[\d\s/-]{6,}/.test(line) && /tel|telefon|\+/i.test(line)) {
-      phone = line;
+    if (
+      !phone &&
+      /\d[\d\s/-]{5,}/.test(line) &&
+      (/tel|telefon|\+/i.test(line) || /^\d/.test(line.trim()))
+    ) {
+      // Plain DE landline lines (e.g. "030-627 35 160")
+      if (!/straße|strasse|berlin|gmbh|www\.|@/i.test(line)) {
+        phone = line.trim();
+      }
     }
     if (!website && /www\./i.test(line)) {
       website = line.startsWith("http") ? line : `https://${line}`;
     }
   }
+  const logoWidth =
+    parsePx(logo?.getAttribute("width")) ??
+    parsePx(
+      /width\s*:\s*(\d+)/i.exec(logo?.getAttribute("style") ?? "")?.[1],
+    ) ??
+    parsePx(logo?.closest("table")?.getAttribute("width"));
+
   return {
     id: nextId("co"),
     type: "company-information",
     companyName: lines[0],
-    addressLines: lines.slice(1, 6),
+    addressLines: lines.slice(1, 8),
     phone,
     email,
     website,
     logoSrc: logo?.getAttribute("src") ?? undefined,
+    logoWidth,
   };
 }
 
@@ -73,8 +107,9 @@ export function companyInfoToBlocks(
       type: "image",
       role: "brand-logo",
       src: company.logoSrc.trim(),
-      alt: company.companyName ?? "Logo",
-      width: 120,
+      alt: company.companyName?.split(/\s+/).slice(0, 3).join(" ") || "Logo",
+      // Brevo footers use ~200–229px — never shrink to a tiny default
+      width: company.logoWidth && company.logoWidth > 0 ? company.logoWidth : 200,
       alignment: "left",
     });
   }
@@ -82,46 +117,71 @@ export function companyInfoToBlocks(
   return blocks;
 }
 
+/**
+ * Compact contact block — Brevo-like <p> lines (margin:0), not spacer stacks.
+ * Company name dark; address/phone/links grey 14px.
+ */
 export function companyInfoToRichText(
   company: CompanyInformationBlock,
 ): RichTextBlock {
-  const parts: string[] = [];
+  const linesHtml: string[] = [];
   if (company.companyName) {
-    parts.push(`<strong>${escapeHtml(company.companyName)}</strong><br/>`);
+    linesHtml.push(
+      `<p style="margin:0;color:#000000;font-size:14px;">${escapeHtml(company.companyName)}</p>`,
+    );
   }
+
+  const websiteHost = company.website
+    ? company.website.replace(/^https?:\/\//i, "").replace(/\/$/, "")
+    : "";
+
   for (const line of company.addressLines) {
     if (!line.trim()) continue;
-    // Skip lines that duplicate contact fields already linked below
+    // Skip lines already rendered as structured contact fields below
     if (company.phone && line.includes(company.phone)) continue;
     if (company.email && line.includes(company.email)) continue;
-    if (company.website && line.includes(company.website.replace(/^https?:\/\//, ""))) {
+    if (
+      websiteHost &&
+      (line.includes(websiteHost) ||
+        line.replace(/^https?:\/\//i, "") === websiteHost)
+    ) {
       continue;
     }
-    parts.push(`${escapeHtml(line)}<br/>`);
+    // Skip bare www / email / phone-looking residual lines (rendered below)
+    if (/^www\./i.test(line) || (/@/.test(line) && !/\s/.test(line))) continue;
+    if (/^\d[\d\s/-]{5,}$/.test(line.trim())) continue;
+    linesHtml.push(
+      `<p style="margin:0;color:#666666;font-size:14px;">${escapeHtml(line.trim())}</p>`,
+    );
   }
+
   if (company.phone) {
-    parts.push(
-      `Telefon: <a href="tel:${escapeHtml(company.phone)}">${escapeHtml(company.phone)}</a><br/>`,
+    linesHtml.push(
+      `<p style="margin:0;color:#666666;font-size:14px;"><a href="tel:${escapeHtml(company.phone.replace(/\s+/g, ""))}" style="color:#666666;text-decoration:none;">${escapeHtml(company.phone)}</a></p>`,
     );
   }
   if (company.website) {
     const href = company.website.startsWith("http")
       ? company.website
       : `https://${company.website}`;
-    parts.push(
-      `<a href="${escapeHtml(href)}" target="_blank" rel="noopener noreferrer">${escapeHtml(company.website)}</a><br/>`,
+    const label = company.website.replace(/^https?:\/\//i, "");
+    linesHtml.push(
+      `<p style="margin:0;color:#666666;font-size:14px;"><a href="${escapeHtml(href)}" target="_blank" rel="noopener noreferrer" style="color:#666666;text-decoration:underline;">${escapeHtml(label)}</a></p>`,
     );
   }
   if (company.email) {
-    parts.push(
-      `<a href="mailto:${escapeHtml(company.email)}">${escapeHtml(company.email)}</a>`,
+    linesHtml.push(
+      `<p style="margin:0;color:#666666;font-size:14px;"><a href="mailto:${escapeHtml(company.email)}" style="color:#666666;text-decoration:underline;">${escapeHtml(company.email)}</a></p>`,
     );
   }
+
+  const inner = linesHtml.join("") || "<p style=\"margin:0;\"> </p>";
   return {
     id: nextId("rt"),
     type: "rich-text",
     role: "company-contact",
-    html: parts.join("\n") || " ",
+    // Compact Brevo-like spacing — never insert spacer blocks between lines
+    html: `<div style="margin:0;line-height:1.25;font-size:14px;font-family:Tahoma,Arial,sans-serif;">${inner}</div>`,
   };
 }
 
@@ -163,6 +223,7 @@ export interface FooterColumnsResult {
 
 /**
  * Detect 50/50 company | cert footer → normal blocks (image + rich-text | image).
+ * Logo width/src come from the real <img>; cert column keeps every image.
  */
 export function tryFooterColumns(
   cells: Element[],
@@ -182,16 +243,33 @@ export function tryFooterColumns(
   } else {
     return null;
   }
-  const company = extractCompanyInfo(companyCell);
-  const img = certCell.querySelector("img");
-  let certificationImage: ImageBlock | undefined;
-  if (img) {
-    certificationImage = imageFromElement(img, "certifications") ?? undefined;
+
+  const logoEl = companyCell.querySelector("img");
+  const logoBlock = logoEl
+    ? imageFromElement(logoEl, "brand-logo")
+    : null;
+  if (logoBlock) {
+    logoBlock.alignment = "left";
+    // Fallback if Brevo omitted width attr
+    if (!logoBlock.width || logoBlock.width < 40) logoBlock.width = 200;
   }
+
+  const company = extractCompanyInfo(companyCell);
+  // Prefer real img block over reconstructed company.logoSrc (keeps exact width)
+  const left: EmailBlock[] = logoBlock
+    ? [logoBlock, companyInfoToRichText(company)]
+    : companyInfoToBlocks(company);
+
+  const certImages = imagesFromCell(certCell, "certifications").map((img) => ({
+    ...img,
+    alignment: "center" as const,
+    role: "certifications" as const,
+  }));
+
   return {
-    left: companyInfoToBlocks(company),
-    right: certificationImage ? [certificationImage] : [],
-    certificationImage,
+    left,
+    right: certImages,
+    certificationImage: certImages[0],
   };
 }
 

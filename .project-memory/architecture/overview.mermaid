@@ -4,14 +4,13 @@ flowchart TB
   API[apps/api Fastify]
   DB[(PostgreSQL)]
   AS[Asset Storage]
-  R[email-renderer]
-  BA[brevo-adapter]
+  GW[BrevoTemplateGateway]
   BREVO[Brevo]
 
   ERP -->|iframe / later MFE| UI
+  UI -->|getHtml / buildPublishHtml| UI
   UI --> API
   API --> DB
   API --> AS
-  API --> R
-  R --> BA
-  BA --> BREVO
+  API --> GW
+  GW --> BREVO

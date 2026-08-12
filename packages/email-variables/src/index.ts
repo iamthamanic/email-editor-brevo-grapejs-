@@ -23,7 +23,25 @@ export {
   toExpression,
 } from "./expression.js";
 
-export { getSampleData } from "./sample.js";
-export type { SampleData } from "./sample.js";
+export {
+  getPreviewContact,
+  getSampleData,
+  listPreviewContacts,
+} from "./sample.js";
+export type { PreviewContact, SampleData } from "./sample.js";
 
 export { substituteParams } from "./substitute.js";
+
+export {
+  hasLegacyHashTokens,
+  LEGACY_HASH_TO_PARAM,
+  replaceLegacyHashTokens,
+  replaceLegacyHashTokensDeep,
+} from "./legacyHash.js";
+
+export {
+  coalesceBrokenParamHtml,
+  coalesceBrokenParamHtmlDeep,
+  isParamOnlyMarkup,
+  takeLeadingParamChunks,
+} from "./coalesceBrokenParams.js";

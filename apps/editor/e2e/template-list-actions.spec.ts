@@ -53,6 +53,42 @@ test.describe("Template list actions", () => {
 
     await rowA.getByTestId("template-row-menu").click();
     await expect(page.getByTestId("template-row-menu-panel")).toBeVisible();
+    await expect(page.getByTestId("template-row-publish")).toBeVisible();
+    await page.getByTestId("template-row-duplicate").click();
+    const copyRow = page
+      .getByTestId("template-list-row")
+      .filter({ hasText: `(Kopie` })
+      .filter({ hasText: nameA });
+    await expect(copyRow).toBeVisible({ timeout: 10_000 });
+    await expect(copyRow).toContainText(/Kopiert am \d{2}\.\d{2}\.\d{4}/);
+
+    // Copies stay pinned above non-copies for the same search
+    await search.fill(String(stamp));
+    const rows = page.getByTestId("template-list-row");
+    await expect(rows.first()).toContainText("(Kopie");
+
+    const copyId = await request
+      .get("http://localhost:3001/api/templates")
+      .then(async (res) => {
+        const body = await res.json();
+        const hit = (body.data as Array<{ id: string; name: string }>).find(
+          (t) => t.name.startsWith("(Kopie") && t.name.includes(nameA),
+        );
+        return hit?.id;
+      });
+    expect(copyId).toBeTruthy();
+    if (copyId) {
+      const delCopy = await request.delete(
+        `http://localhost:3001/api/templates/${copyId}`,
+      );
+      expect(delCopy.ok()).toBeTruthy();
+    }
+
+    await search.fill(String(stamp));
+    await expect(page.getByTestId("template-list-row")).toHaveCount(2);
+
+    await rowA.getByTestId("template-row-menu").click();
+    await expect(page.getByTestId("template-row-menu-panel")).toBeVisible();
     await page.getByTestId("template-row-info").click();
     await expect(page.getByTestId("template-info-modal")).toBeVisible();
     await expect(page.getByTestId("template-info-logs")).toContainText("Dev User");

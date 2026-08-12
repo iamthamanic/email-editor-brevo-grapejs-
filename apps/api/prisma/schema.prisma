@@ -20,8 +20,12 @@ model EmailTemplate {
   status              String    @default("DRAFT")
   source              String    @default("LOCAL")
   editorData          Json      @map("editor_data")
+  /// Last editor/published HTML — not reliable Brevo original (see migration).
   publishedHtml       String?   @map("published_html") @db.Text
   publishedEditorData Json?     @map("published_editor_data")
+  /// Survives Grapes autosave (unlike __etsImport on project JSON).
+  editorSchemaVersion Int       @default(0) @map("editor_schema_version")
+  conversionMeta      Json?     @map("conversion_meta")
   brevoModifiedAt     DateTime? @map("brevo_modified_at")
   lastSyncedAt        DateTime? @map("last_synced_at")
   revision            Int       @default(1)
@@ -31,8 +35,24 @@ model EmailTemplate {
 
   auditLogs   TemplateAuditLog[]
   sendEvents  TemplateSendEvent[]
+  versions    TemplateVersion[]
 
   @@map("email_templates")
+}
+
+/// Snapshot before risky edits (e.g. Brevo editor migration).
+model TemplateVersion {
+  id         String   @id @default(uuid())
+  templateId String   @map("template_id")
+  revision   Int
+  editorData Json     @map("editor_data")
+  reason     String
+  createdAt  DateTime @default(now()) @map("created_at")
+
+  template EmailTemplate @relation(fields: [templateId], references: [id], onDelete: Cascade)
+
+  @@index([templateId, createdAt])
+  @@map("template_versions")
 }
 
 /// Reusable email section masters (header/footer/content/social).

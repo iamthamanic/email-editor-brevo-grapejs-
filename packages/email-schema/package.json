@@ -9,9 +9,11 @@
     ".": "./src/index.ts"
   },
   "scripts": {
-    "typecheck": "tsc --noEmit"
+    "typecheck": "tsc --noEmit",
+    "test": "tsx --test src/**/*.test.ts"
   },
   "devDependencies": {
+    "tsx": "^4.23.11",
     "typescript": "^5.8.2"
   }
 }

@@ -152,6 +152,10 @@ export function VariablePicker({
                         type="button"
                         className="variables-item"
                         data-variable-key={v.key}
+                        onMouseDown={(e) => {
+                          // Keep canvas caret/selection until onClick insert runs
+                          e.preventDefault();
+                        }}
                         onClick={() => onPick(v)}
                       >
                         <span className="variables-item-main">

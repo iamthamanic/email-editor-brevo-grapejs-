@@ -8,8 +8,10 @@ export {
   getRichTextController,
   RichTextController,
 } from "./controller.js";
+export { installNativeCustomRte } from "./nativeCustomRte.js";
 export {
   IDLE_RICH_TEXT_STATE,
+  RICH_TEXT_FONT_SIZES,
   type RichTextAlign,
   type RichTextBlockType,
   type RichTextCommand,

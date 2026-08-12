@@ -4,9 +4,11 @@
  * Location: apps/editor/src/templates/EditorToolbar.tsx
  */
 
-import { useEffect, useRef, useState, type ReactNode } from "react";
+import { useEffect, useRef, useState, type DragEvent, type ReactNode } from "react";
 import {
   EMAIL_COMPONENTS,
+  blockThumbnail,
+  columnsSectionContent,
   footerSectionContent,
   headerSectionContent,
   socialSectionContent,
@@ -15,11 +17,25 @@ import {
 import {
   getRichTextController,
   IDLE_RICH_TEXT_STATE,
+  RICH_TEXT_FONT_SIZES,
   type Editor,
   type RichTextFormatState,
 } from "@email-template/editor-core";
 import { VariablePicker } from "../variables/VariablePicker";
+import {
+  bookmarkActiveCaret,
+  installCaretBookmarkTracking,
+} from "../variables/insertVariable";
+import {
+  dropHeightHintForBlockType,
+  endEditorDrag,
+  findContentColumnTarget,
+  insertSectionAtPointer,
+  isPointerOverCanvas,
+  startEditorDrag,
+} from "./canvasInsert";
 import { SavedSectionsMenu } from "./SavedSectionsMenu";
+import { ToolbarTextColor } from "./ToolbarTextColor";
 import {
   IconAlignCenter,
   IconAlignJustify,
@@ -30,16 +46,13 @@ import {
   IconChevronDown,
   IconClearFormat,
   IconCode,
-  IconColorText,
   IconDesktop,
-  IconImage,
   IconItalic,
   IconLink,
   IconList,
   IconListOrdered,
   IconMobile,
   IconPencil,
-  IconQuote,
   IconRedo,
   IconStrike,
   IconUnderline,
@@ -51,12 +64,25 @@ interface EditorToolbarProps {
   editor: Editor | null;
   onToggleCode: () => void;
   codeOpen: boolean;
+  /**
+   * full = template editor (sections + corporate + social).
+   * compose = content/layout only (locked chrome not insertable).
+   */
+  blockPalette?: "full" | "compose";
 }
 
-type OpenMenu = "blocks" | "variables" | "saved" | null;
+type OpenMenu = "blocks" | "variables" | "saved" | "color" | "hilite" | null;
 type Device = "Desktop" | "Mobile";
 
 const CATEGORY_ORDER = ["content", "sections", "layout", "corporate"] as const;
+const COMPOSE_HIDDEN_TYPES = new Set([
+  "company-social",
+  "email-section",
+  "email-section-header",
+  "email-section-footer",
+  "email-section-social",
+  "company-legal",
+]);
 
 type BlockGroup = {
   category: (typeof CATEGORY_ORDER)[number];
@@ -64,12 +90,19 @@ type BlockGroup = {
   items: EmailComponentDef[];
 };
 
-function filterBlocks(query: string): BlockGroup[] {
+function filterBlocks(
+  query: string,
+  palette: "full" | "compose",
+): BlockGroup[] {
   const q = query.trim().toLowerCase();
   const groups: BlockGroup[] = [];
   for (const category of CATEGORY_ORDER) {
+    if (palette === "compose" && (category === "sections" || category === "corporate")) {
+      continue;
+    }
     const items = EMAIL_COMPONENTS.filter((c) => {
       if (c.category !== category) return false;
+      if (palette === "compose" && COMPOSE_HIDDEN_TYPES.has(c.type)) return false;
       if (!q) return true;
       const hay = `${c.label} ${c.categoryLabel} ${c.type}`.toLowerCase();
       return hay.includes(q);
@@ -84,15 +117,6 @@ function filterBlocks(query: string): BlockGroup[] {
   return groups;
 }
 
-function insertImage(editor: Editor) {
-  const url = window.prompt("Bild-URL", "https://");
-  if (!url?.trim()) return;
-  editor.addComponents({
-    type: "email-image",
-    attributes: { src: url.trim(), alt: "Bild" },
-  });
-}
-
 function blockContent(type: string): object {
   if (type === "email-section-header") return headerSectionContent();
   if (type === "email-section-footer") return footerSectionContent();
@@ -104,61 +128,75 @@ function blockContent(type: string): object {
       attributes: { "data-role": "content", "data-section-role": "content" },
     };
   }
-  if (type === "email-columns-1") {
-    return {
-      type: "email-section",
-      sectionRole: "content",
-      components: [
-        {
-          type: "email-row",
-          components: [
-            {
-              type: "email-column",
-              components: [{ type: "email-text", content: "Spalte" }],
-            },
-          ],
-        },
-      ],
-    };
-  }
-  if (type === "email-columns-2" || type === "email-columns-3") {
-    const n = type === "email-columns-2" ? 2 : 3;
-    const w = Math.floor(100 / n);
-    return {
-      type: "email-section",
-      sectionRole: "content",
-      components: [
-        {
-          type: "email-row",
-          components: Array.from({ length: n }, () => ({
-            type: "email-column",
-            columnWidth: w,
-            attributes: { width: `${w}%` },
-            components: [{ type: "email-text", content: "Spalte" }],
-          })),
-        },
-      ],
-    };
-  }
+  if (type === "email-columns-1") return columnsSectionContent(1);
+  if (type === "email-columns-2") return columnsSectionContent(2);
+  if (type === "email-columns-3") return columnsSectionContent(3);
   return { type };
 }
 
 function insertBlock(editor: Editor, type: string) {
   const content = blockContent(type);
-  const selected = editor.getSelected();
-  let target = selected;
-  while (target && !target.get("droppable")) {
-    target = target.parent();
-  }
-  // Sections always go to root
-  const isSection =
-    type.startsWith("email-section") ||
-    type.startsWith("email-columns");
-  if (isSection || !target?.get("droppable")) {
-    editor.addComponents(content);
+  // Layout columns are nested canvas blocks (email-layout-row), not top-level sections.
+  const isSection = type.startsWith("email-section");
+
+  if (isSection) {
+    const added = editor.addComponents(content);
+    const first = Array.isArray(added) ? added[0] : added;
+    if (first) editor.select(first);
     return;
   }
-  target.append(content);
+
+  // Leave RTE first — otherwise Grapes may nest the new block inside the
+  // editing text host (image becomes selectable:false → click does nothing).
+  const editing = editor.getEditing?.();
+  if (editing) {
+    const view = editing.getView?.() as
+      | { disableEditing?: () => void }
+      | undefined;
+    try {
+      view?.disableEditing?.();
+    } catch {
+      // ignore
+    }
+  }
+
+  const target = findContentColumnTarget(editor);
+  if (!target) {
+    window.alert(
+      "Inhaltsbereich konnte nicht angelegt werden. Bitte Seite neu laden.",
+    );
+    return;
+  }
+
+  const added = target.append(content);
+  const first = Array.isArray(added) ? added[0] : added;
+  if (first) {
+    // Safety: if the leaf still landed under email-text, pull it into the column.
+    let parent = first.parent?.() as
+      | { get?: (k: string) => unknown; parent?: () => unknown }
+      | undefined;
+    while (parent && String(parent.get?.("type") ?? "") !== "email-column") {
+      if (String(parent.get?.("type") ?? "") === "email-text") {
+        try {
+          if (typeof (first as { move?: Function }).move === "function") {
+            (first as { move: (t: unknown, o?: object) => void }).move(target);
+          } else {
+            target.append(first);
+          }
+        } catch {
+          // ignore
+        }
+        break;
+      }
+      parent = parent.parent?.() as typeof parent;
+    }
+    editor.select(first);
+    // Scroll newly inserted block into view inside the canvas iframe.
+    requestAnimationFrame(() => {
+      const el = first.getEl?.();
+      el?.scrollIntoView?.({ block: "nearest", behavior: "smooth" });
+    });
+  }
 }
 
 /** Keep canvas selection when clicking host-chrome toolbar controls. */
@@ -169,6 +207,14 @@ function preserveSelection(e: {
   // preventDefault: do not move focus out of the canvas iframe selection
   // stopPropagation: GrapesJS treats host mousedown as "click outside" → rte:disable
   e.preventDefault();
+  e.stopPropagation();
+}
+
+/**
+ * Native <select> must receive default mousedown (otherwise the menu never opens).
+ * Only stopPropagation so GrapesJS doesn't treat it as click-outside → rte:disable.
+ */
+function preserveSelectOpen(e: { stopPropagation: () => void }) {
   e.stopPropagation();
 }
 
@@ -222,6 +268,7 @@ export function EditorToolbar({
   editor,
   onToggleCode,
   codeOpen,
+  blockPalette = "full",
 }: EditorToolbarProps) {
   const rootRef = useRef<HTMLDivElement | null>(null);
   const [canUndo, setCanUndo] = useState(false);
@@ -262,6 +309,11 @@ export function EditorToolbar({
   }, [editor]);
 
   useEffect(() => {
+    if (!editor) return;
+    return installCaretBookmarkTracking(editor);
+  }, [editor]);
+
+  useEffect(() => {
     if (!openMenu) return;
 
     function onPointerDown(e: MouseEvent) {
@@ -285,8 +337,17 @@ export function EditorToolbar({
 
   const disabled = !editor;
   const rteOff = disabled || !rt.active;
-  const blockGroups = filterBlocks(blockQuery);
+  const blockGroups = filterBlocks(blockQuery, blockPalette);
   const ctrl = editor ? getRichTextController(editor) : null;
+
+  /** Keep canvas selection + stash caret for variable insert after focus steal. */
+  function preserveSelectionAndCaret(e: {
+    preventDefault: () => void;
+    stopPropagation: () => void;
+  }) {
+    preserveSelection(e);
+    if (editor) bookmarkActiveCaret(editor);
+  }
 
   function toggleMenu(menu: Exclude<OpenMenu, null>) {
     setOpenMenu((prev) => (prev === menu ? null : menu));
@@ -336,7 +397,7 @@ export function EditorToolbar({
             data-testid="toolbar-block-type"
             disabled={rteOff}
             value={rt.blockType}
-            onMouseDown={preserveSelection}
+            onMouseDown={preserveSelectOpen}
             onChange={(e) => {
               const tag = e.target.value as RichTextFormatState["blockType"];
               runRt({ type: "block", tag });
@@ -347,6 +408,36 @@ export function EditorToolbar({
             <option value="h2">Überschrift 2</option>
             <option value="h3">Überschrift 3</option>
             <option value="h4">Überschrift 4</option>
+          </select>
+          <select
+            className="ed-tb-select ed-tb-select--size"
+            aria-label="Schriftgröße"
+            data-testid="toolbar-font-size"
+            disabled={rteOff}
+            value={(() => {
+              const sizes = RICH_TEXT_FONT_SIZES as readonly number[];
+              if (sizes.includes(rt.fontSize)) return String(rt.fontSize);
+              if (rt.fontSize > 0) return String(rt.fontSize);
+              return "16";
+            })()}
+            onMouseDown={preserveSelectOpen}
+            onChange={(e) => {
+              const sizePx = Number.parseInt(e.target.value, 10);
+              if (!Number.isFinite(sizePx)) return;
+              runRt({ type: "fontSize", sizePx });
+            }}
+          >
+            {rt.fontSize > 0 &&
+            !(RICH_TEXT_FONT_SIZES as readonly number[]).includes(
+              rt.fontSize,
+            ) ? (
+              <option value={String(rt.fontSize)}>{rt.fontSize} px</option>
+            ) : null}
+            {RICH_TEXT_FONT_SIZES.map((px) => (
+              <option key={px} value={String(px)}>
+                {px} px
+              </option>
+            ))}
           </select>
         </ToolbarGroup>
 
@@ -482,48 +573,27 @@ export function EditorToolbar({
           >
             <IconLink />
           </ToolbarBtn>
-          <ToolbarBtn
-            title="Bildblock einfügen"
-            testId="toolbar-image"
-            disabled={disabled}
-            onClick={() => editor && insertImage(editor)}
-          >
-            <IconImage />
-          </ToolbarBtn>
-          <ToolbarBtn
-            title="Zitat"
-            testId="toolbar-quote"
-            disabled={rteOff}
-            preserveRteSelection
-            onClick={() => runRt("quote")}
-          >
-            <IconQuote />
-          </ToolbarBtn>
         </ToolbarGroup>
 
         <ToolbarSep />
 
         <ToolbarGroup>
-          <label
-            className="ed-tb-color"
-            title="Textfarbe"
-            onMouseDown={preserveSelection}
-          >
-            <span className="ed-tb-color-icon" aria-hidden>
-              <IconColorText />
-            </span>
-            <span className="sr-only">Textfarbe</span>
-            <input
-              type="color"
-              defaultValue="#171717"
-              disabled={rteOff}
-              data-testid="toolbar-color"
-              onMouseDown={preserveSelection}
-              onChange={(e) => {
-                runRt({ type: "foreColor", color: e.target.value });
-              }}
-            />
-          </label>
+          <ToolbarTextColor
+            mode="fore"
+            disabled={rteOff}
+            open={openMenu === "color"}
+            onOpenChange={(next) => setOpenMenu(next ? "color" : null)}
+            preserveSelection={preserveSelection}
+            onPick={(hex) => runRt({ type: "foreColor", color: hex })}
+          />
+          <ToolbarTextColor
+            mode="hilite"
+            disabled={rteOff}
+            open={openMenu === "hilite"}
+            onOpenChange={(next) => setOpenMenu(next ? "hilite" : null)}
+            preserveSelection={preserveSelection}
+            onPick={(hex) => runRt({ type: "hiliteColor", color: hex })}
+          />
           <ToolbarBtn
             title="Formatierung entfernen"
             testId="toolbar-clear-format"
@@ -546,6 +616,7 @@ export function EditorToolbar({
               aria-haspopup="dialog"
               disabled={disabled}
               data-testid="toolbar-blocks-btn"
+              onMouseDown={preserveSelection}
               onClick={() => toggleMenu("blocks")}
             >
               <IconBlocks size={15} />
@@ -567,7 +638,6 @@ export function EditorToolbar({
                     onChange={(e) => setBlockQuery(e.target.value)}
                     placeholder="Blöcke suchen…"
                     autoComplete="off"
-                    autoFocus
                   />
                 </label>
                 <div className="ed-tb-dropdown-body">
@@ -582,16 +652,93 @@ export function EditorToolbar({
                             <li key={item.type}>
                               <button
                                 type="button"
-                                className="ed-tb-item"
+                                className="ed-tb-item ed-tb-item--block ed-tb-item--drag"
                                 data-block-type={item.type}
+                                draggable={Boolean(editor)}
+                                title={`${item.label} — klicken oder in die Spalte ziehen`}
                                 onClick={() => {
                                   if (!editor) return;
                                   insertBlock(editor, item.type);
                                   setOpenMenu(null);
                                   setBlockQuery("");
                                 }}
+                                onDragStart={(e: DragEvent) => {
+                                  if (!editor) {
+                                    e.preventDefault();
+                                    return;
+                                  }
+                                  const isTopSection =
+                                    item.type.startsWith("email-section");
+                                  startEditorDrag(
+                                    editor,
+                                    blockContent(item.type),
+                                    isTopSection ? "section" : "leaf",
+                                    {
+                                      dropHeightHint:
+                                        dropHeightHintForBlockType(item.type),
+                                    },
+                                  );
+                                  e.dataTransfer.effectAllowed = "copy";
+                                  e.dataTransfer.setData(
+                                    "text/plain",
+                                    item.label,
+                                  );
+                                }}
+                                onDragEnd={(e: DragEvent) => {
+                                  if (!editor) return;
+                                  const isTopSection =
+                                    item.type.startsWith("email-section");
+                                  const isColumnLayout =
+                                    item.type.startsWith("email-columns");
+                                  const isLeaf =
+                                    !isTopSection &&
+                                    (item.type.startsWith("email-") ||
+                                      item.type.startsWith("company-"));
+                                  const result = endEditorDrag(editor);
+                                  // Top-level sections: pointer-place if Grapes missed.
+                                  if (
+                                    isTopSection &&
+                                    !result &&
+                                    isPointerOverCanvas(
+                                      editor,
+                                      e.clientX,
+                                      e.clientY,
+                                    )
+                                  ) {
+                                    insertSectionAtPointer(
+                                      editor,
+                                      blockContent(item.type),
+                                      e.clientY,
+                                    );
+                                    setOpenMenu(null);
+                                    setBlockQuery("");
+                                    return;
+                                  }
+                                  // Column layouts + content leaves: insert if Grapes missed.
+                                  if (
+                                    (isColumnLayout || isLeaf) &&
+                                    !result &&
+                                    isPointerOverCanvas(
+                                      editor,
+                                      e.clientX,
+                                      e.clientY,
+                                    )
+                                  ) {
+                                    insertBlock(editor, item.type);
+                                    setOpenMenu(null);
+                                    setBlockQuery("");
+                                  }
+                                }}
                               >
-                                {item.label}
+                                <span
+                                  className="ed-tb-item-thumb"
+                                  dangerouslySetInnerHTML={{
+                                    __html: blockThumbnail(item.type),
+                                  }}
+                                />
+                                <span className="ed-tb-item-label">
+                                  {item.label}
+                                </span>
                               </button>
                             </li>
                           ))}
@@ -612,6 +759,7 @@ export function EditorToolbar({
               aria-haspopup="dialog"
               disabled={disabled}
               data-testid="toolbar-variables-btn"
+              onMouseDown={preserveSelectionAndCaret}
               onClick={() => toggleMenu("variables")}
             >
               <IconVariable size={18} />
@@ -633,7 +781,6 @@ export function EditorToolbar({
                     onChange={(e) => setVarQuery(e.target.value)}
                     placeholder="Variablen suchen…"
                     autoComplete="off"
-                    autoFocus
                   />
                 </label>
                 <div className="ed-tb-dropdown-body">
@@ -656,6 +803,7 @@ export function EditorToolbar({
             open={openMenu === "saved"}
             onToggle={() => toggleMenu("saved")}
             onClose={() => setOpenMenu(null)}
+            preserveSelection={preserveSelection}
           />
         </ToolbarGroup>
 

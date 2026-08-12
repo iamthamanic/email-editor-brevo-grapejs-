@@ -1,5 +1,6 @@
 /**
  * Migrate legacy monolith header/footer composites → section/row/column/blocks.
+ * Also heals `bis</p><div>param` RTE splits on email-text content.
  * Location: packages/editor-core/src/migrateLegacyLayout.ts
  */
 
@@ -8,6 +9,7 @@ import {
   footerSectionContent,
   headerSectionContent,
 } from "@email-template/email-components";
+import { coalesceBrokenParamHtml } from "@email-template/email-variables";
 
 function attrs(c: Component): Record<string, string> {
   return (c.getAttributes?.() ?? {}) as Record<string, string>;
@@ -149,6 +151,29 @@ function migrateCompanyContact(comp: Component): object[] {
 }
 
 /**
+ * GrapesJS RTE sometimes closes a paragraph after "bis" and puts the next
+ * param badge in a sibling block — pull it back onto one line.
+ */
+function repairBrokenBisParamSplits(editor: Editor): void {
+  const wrapper = editor.getWrapper();
+  if (!wrapper) return;
+  const texts = [
+    ...wrapper.findType("email-text"),
+    ...wrapper.findType("email-heading"),
+  ];
+  for (const comp of texts) {
+    const el = comp.getEl?.() as HTMLElement | undefined;
+    const fromDom = el?.innerHTML?.trim() ? el.innerHTML : "";
+    const fromModel = String(comp.get("content") ?? "");
+    const html = fromDom || fromModel;
+    if (!html || !/bis/i.test(html)) continue;
+    const fixed = coalesceBrokenParamHtml(html);
+    if (fixed === html) continue;
+    comp.components(fixed);
+  }
+}
+
+/**
  * Walk top-level components and replace legacy composites once.
  * Safe to call after load / import.
  */
@@ -209,4 +234,6 @@ export function migrateLegacyLayout(editor: Editor): void {
       "data-role": role === "corporate-footer" ? "footer" : role,
     });
   }
+
+  repairBrokenBisParamSplits(editor);
 }

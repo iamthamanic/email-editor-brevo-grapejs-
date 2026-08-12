@@ -13,6 +13,19 @@ import {
 } from "@email-template/email-schema";
 import { prisma } from "../db.js";
 import { ServiceError } from "../templates/service.js";
+import {
+  buildHarvestSectionData,
+  extractHarvestCandidates,
+  hashFromSectionData,
+  type HarvestCandidate,
+} from "./harvest.js";
+
+export interface HarvestResult {
+  scannedTemplates: number;
+  candidates: number;
+  created: number;
+  skippedExisting: number;
+}
 
 const ROLES = new Set(["header", "footer", "content", "social"]);
 
@@ -35,7 +48,8 @@ function assertSectionData(data: unknown): asserts data is Record<string, unknow
     );
   }
   const raw = JSON.stringify(data);
-  if (/javascript:|on\w+\s*=|<script/i.test(raw)) {
+  // Event handlers need a boundary so "contenteditable=" is not a false positive.
+  if (/javascript:|<\s*script\b|\son[a-z]+\s*=/i.test(raw)) {
     throw new ServiceError(
       ERROR_CODES.VALIDATION,
       "sectionData contains disallowed content.",
@@ -69,9 +83,53 @@ export async function listSavedSections(
 ): Promise<SavedEmailSectionDto[]> {
   const rows = await prisma.emailSavedSection.findMany({
     where: role ? { role } : undefined,
-    orderBy: [{ role: "asc" }, { name: "asc" }],
+    orderBy: [{ createdAt: "asc" }],
   });
-  return rows.map(toDto);
+  const kept: typeof rows = [];
+  const seen = new Set<string>();
+  for (const row of rows) {
+    const data = (row.sectionData ?? {}) as Record<string, unknown>;
+    const key = hashFromSectionData(data) ?? `id:${row.id}`;
+    if (seen.has(key)) {
+      continue;
+    }
+    seen.add(key);
+    kept.push(row);
+  }
+  // Dedup is response-only — never delete on list/read.
+  kept.sort((a, b) => {
+    const roleCmp = a.role.localeCompare(b.role);
+    if (roleCmp !== 0) return roleCmp;
+    return a.name.localeCompare(b.name, "de");
+  });
+  return kept.map(toDto);
+}
+
+async function findSectionIdByContentHash(
+  hash: string,
+): Promise<string | null> {
+  const rows = await prisma.emailSavedSection.findMany({
+    select: { id: true, sectionData: true },
+  });
+  for (const row of rows) {
+    const h = hashFromSectionData(
+      (row.sectionData ?? {}) as Record<string, unknown>,
+    );
+    if (h === hash) return row.id;
+  }
+  return null;
+}
+
+function ensureContentHash(
+  sectionData: Record<string, unknown>,
+): Record<string, unknown> {
+  const hash = hashFromSectionData(sectionData);
+  if (!hash) return sectionData;
+  const attrs = {
+    ...((sectionData.attributes as Record<string, unknown>) ?? {}),
+    "data-textbaustein-hash": hash,
+  };
+  return { ...sectionData, attributes: attrs };
 }
 
 export async function getSavedSection(id: string): Promise<SavedEmailSectionDto> {
@@ -91,7 +149,15 @@ export async function createSavedSection(
   }
   assertRole(body.role);
   assertSectionData(body.sectionData);
-  const stamped = stampSource(body.sectionData, "new", 1, "linked");
+  const withHash = ensureContentHash(body.sectionData);
+  const hash = hashFromSectionData(withHash);
+  if (hash) {
+    const existingId = await findSectionIdByContentHash(hash);
+    if (existingId) {
+      return getSavedSection(existingId);
+    }
+  }
+  const stamped = stampSource(withHash, "new", 1, "linked");
   const row = await prisma.emailSavedSection.create({
     data: {
       name,
@@ -158,6 +224,75 @@ export async function deleteSavedSection(id: string): Promise<void> {
   } catch {
     throw new ServiceError(ERROR_CODES.NOT_FOUND, "Saved section not found.", 404);
   }
+}
+
+async function existingContentHashes(): Promise<Set<string>> {
+  const rows = await prisma.emailSavedSection.findMany({
+    where: { role: "content" },
+    select: { sectionData: true },
+  });
+  const hashes = new Set<string>();
+  for (const row of rows) {
+    const data = row.sectionData as Record<string, unknown>;
+    const h = hashFromSectionData(data);
+    if (h) hashes.add(h);
+  }
+  return hashes;
+}
+
+/** Upsert harvested snippets by content hash (create-only; never overwrite manual edits). */
+export async function upsertHarvestCandidates(
+  candidates: HarvestCandidate[],
+): Promise<{ created: number; skippedExisting: number }> {
+  const existing = await existingContentHashes();
+  let created = 0;
+  let skippedExisting = 0;
+  for (const candidate of candidates) {
+    if (existing.has(candidate.hash)) {
+      skippedExisting += 1;
+      continue;
+    }
+    await createSavedSection({
+      name: candidate.name,
+      role: "content",
+      sectionData: buildHarvestSectionData(candidate),
+    });
+    existing.add(candidate.hash);
+    created += 1;
+  }
+  return { created, skippedExisting };
+}
+
+/** Harvest from one editorData blob (e.g. after Brevo convert). */
+export async function harvestFromEditorData(
+  editorData: unknown,
+): Promise<{ created: number; skippedExisting: number; candidates: number }> {
+  const candidates = extractHarvestCandidates(editorData);
+  const { created, skippedExisting } = await upsertHarvestCandidates(candidates);
+  return { created, skippedExisting, candidates: candidates.length };
+}
+
+/** Scan all local templates and harvest Textbausteine. */
+export async function harvestFromAllTemplates(): Promise<HarvestResult> {
+  const templates = await prisma.emailTemplate.findMany({
+    select: { id: true, editorData: true },
+  });
+  const all: HarvestCandidate[] = [];
+  const seen = new Set<string>();
+  for (const t of templates) {
+    for (const c of extractHarvestCandidates(t.editorData)) {
+      if (seen.has(c.hash)) continue;
+      seen.add(c.hash);
+      all.push(c);
+    }
+  }
+  const { created, skippedExisting } = await upsertHarvestCandidates(all);
+  return {
+    scannedTemplates: templates.length,
+    candidates: all.length,
+    created,
+    skippedExisting,
+  };
 }
 
 function stampSource(

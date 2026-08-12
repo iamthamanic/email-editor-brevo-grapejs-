@@ -47,3 +47,20 @@ export async function deleteSavedSection(id: string): Promise<{ ok: boolean }> {
   });
   return parseApiResponse(response);
 }
+
+export interface HarvestTextbausteineResult {
+  scannedTemplates: number;
+  candidates: number;
+  created: number;
+  skippedExisting: number;
+}
+
+/** Harvest paragraph Textbausteine from all local templates (deduped). */
+export async function harvestTextbausteine(): Promise<HarvestTextbausteineResult> {
+  const response = await fetch("/api/saved-sections/harvest", {
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
+    body: "{}",
+  });
+  return parseApiResponse(response);
+}

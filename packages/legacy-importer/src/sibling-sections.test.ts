@@ -43,8 +43,9 @@ describe("sibling Brevo section tables", () => {
     assert.ok(roles[0] === "header", `roles=${roles.join(",")}`);
     assert.ok(roles.includes("footer"), `roles=${roles.join(",")}`);
     assert.ok(roles.includes("social"), `roles=${roles.join(",")}`);
-    assert.ok(
-      roles.filter((r) => r === "content").length >= 1,
+    assert.equal(
+      roles.filter((r) => r === "content").length,
+      1,
       `roles=${roles.join(",")}`,
     );
     assert.ok(doc.children.length >= 4, `sections=${doc.children.length}`);
@@ -55,12 +56,18 @@ describe("sibling Brevo section tables", () => {
     const roles = components.map(
       (c) => (c.attributes as Record<string, string>)?.["data-role"],
     );
-    assert.deepEqual(
-      roles[0],
-      "header",
-    );
+    assert.deepEqual(roles[0], "header");
     assert.ok(roles.includes("footer"));
     assert.ok(roles.includes("social"));
-    assert.ok(roles.every((r) => r === "header" || r === "content" || r === "footer" || r === "social"));
+    assert.equal(roles.filter((r) => r === "content").length, 1);
+    assert.ok(
+      roles.every(
+        (r) =>
+          r === "header" ||
+          r === "content" ||
+          r === "footer" ||
+          r === "social",
+      ),
+    );
   });
 });

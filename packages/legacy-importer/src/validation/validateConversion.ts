@@ -21,48 +21,58 @@ function walkDoc(doc: NormalizedEmailDocument) {
   let legacyBlockCount = 0;
   const texts: string[] = [];
 
+  const walkBlocks = (
+    blocks: NormalizedEmailDocument["children"][number]["columns"][number]["children"],
+  ) => {
+    for (const b of blocks) {
+      switch (b.type) {
+        case "rich-text":
+          richTextCount += 1;
+          texts.push(b.html.replace(/<[^>]+>/g, " "));
+          break;
+        case "image":
+          imageCount += 1;
+          break;
+        case "social-links":
+          socialGroupCount += 1;
+          break;
+        case "legacy-html":
+          legacyBlockCount += 1;
+          texts.push(b.html.replace(/<[^>]+>/g, " "));
+          break;
+        case "company-information":
+          texts.push(
+            [b.companyName, ...b.addressLines, b.phone, b.email, b.website]
+              .filter(Boolean)
+              .join(" "),
+          );
+          break;
+        case "corporate-footer":
+          texts.push(
+            [b.company.companyName, ...b.company.addressLines]
+              .filter(Boolean)
+              .join(" "),
+          );
+          if (b.certificationImage) imageCount += 1;
+          break;
+        case "button":
+          texts.push(b.label);
+          break;
+        case "layout-row":
+          columnCount += b.columns.length;
+          for (const col of b.columns) walkBlocks(col.children);
+          break;
+        default:
+          break;
+      }
+    }
+  };
+
   for (const sec of doc.children) {
     sectionCount += 1;
     columnCount += sec.columns.length;
     for (const col of sec.columns) {
-      for (const b of col.children) {
-        switch (b.type) {
-          case "rich-text":
-            richTextCount += 1;
-            texts.push(b.html.replace(/<[^>]+>/g, " "));
-            break;
-          case "image":
-            imageCount += 1;
-            break;
-          case "social-links":
-            socialGroupCount += 1;
-            break;
-          case "legacy-html":
-            legacyBlockCount += 1;
-            texts.push(b.html.replace(/<[^>]+>/g, " "));
-            break;
-          case "company-information":
-            texts.push(
-              [b.companyName, ...b.addressLines, b.phone, b.email, b.website]
-                .filter(Boolean)
-                .join(" "),
-            );
-            break;
-          case "corporate-footer":
-            texts.push(
-              [b.company.companyName, ...b.company.addressLines]
-                .filter(Boolean)
-                .join(" "),
-            );
-            if (b.certificationImage) imageCount += 1;
-            break;
-          case "button":
-            texts.push(b.label);
-            break;
-          default:
-            break;
-        }
-      }
+      walkBlocks(col.children);
     }
   }
 

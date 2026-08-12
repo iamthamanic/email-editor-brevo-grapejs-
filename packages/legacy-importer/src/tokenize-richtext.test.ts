@@ -68,4 +68,14 @@ describe("convert param pills", () => {
     assert.match(json, /datum\.vier\.tage\.vor\.ablauf/);
     assert.equal(report.variables.preserved, report.variables.expected);
   });
+
+  it("coalesces bis</p><div>param splits in rich text", () => {
+    const html =
+      `<p>Datum: {{ params.datum_von }} bis&#160;</p>` +
+      `<div><span data-email-type="email-param" data-param-key="datum_bis">{{ params.datum_bis }}</span>` +
+      `<br>Uhrzeit: {{ params.uhrzeit_von }}</div>`;
+    const out = String(richTextToGrapesComponents(html));
+    assert.doesNotMatch(out, /bis&#160;<\/p>\s*<div/);
+    assert.match(out, /datum_bis/);
+  });
 });

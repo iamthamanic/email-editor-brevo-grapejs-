@@ -8,6 +8,7 @@ import {
   isKnownVariableKey,
 } from "@email-template/email-variables";
 import type { Component, Editor } from "grapesjs";
+import { EMAIL_FONT_STACK } from "./brandDefaults.js";
 
 /** Allow dotted keys from legacy imports (export still as {{ params.key }}). */
 const KEY_OK = /^[a-z][a-z0-9_.]*$/i;
@@ -25,12 +26,13 @@ span[data-email-type="email-param"] {
   border-radius: 999px !important;
   background: #e6f6ec !important;
   color: #1b6b3a !important;
-  font-family: Arial, Helvetica, sans-serif !important;
+  font-family: ${EMAIL_FONT_STACK} !important;
   font-size: 12px !important;
   font-weight: 600 !important;
   line-height: 1.6;
   cursor: pointer;
-  user-select: none;
+  user-select: text;
+  -webkit-user-select: text;
   white-space: nowrap;
   box-sizing: border-box;
 }
@@ -72,16 +74,16 @@ span[data-email-type="email-param"][data-param-known="false"] {
 const BADGE_STYLE =
   "display:inline-flex;align-items:center;gap:4px;vertical-align:baseline;" +
   "margin:0 2px;padding:1px 8px;border:1px solid #8fd4a8;border-radius:999px;" +
-  "background:#e6f6ec;color:#1b6b3a;font-family:Arial,Helvetica,sans-serif;" +
+  `background:#e6f6ec;color:#1b6b3a;font-family:${EMAIL_FONT_STACK};` +
   "font-size:12px;font-weight:600;line-height:1.6;cursor:pointer;" +
-  "user-select:none;white-space:nowrap;box-sizing:border-box;";
+  "user-select:text;-webkit-user-select:text;white-space:nowrap;box-sizing:border-box;";
 
 const BADGE_STYLE_UNKNOWN =
   "display:inline-flex;align-items:center;gap:4px;vertical-align:baseline;" +
   "margin:0 2px;padding:1px 8px;border:1px solid #f0a0a0;border-radius:999px;" +
-  "background:#fde8e8;color:#a32020;font-family:Arial,Helvetica,sans-serif;" +
+  `background:#fde8e8;color:#a32020;font-family:${EMAIL_FONT_STACK};` +
   "font-size:12px;font-weight:600;line-height:1.6;cursor:pointer;" +
-  "user-select:none;white-space:nowrap;box-sizing:border-box;";
+  "user-select:text;-webkit-user-select:text;white-space:nowrap;box-sizing:border-box;";
 
 const REMOVE_STYLE =
   "display:none;align-items:center;justify-content:center;margin:0;padding:0;" +
@@ -145,8 +147,24 @@ function paramExpressionOf(model: Component): string {
   return paramBadgeLabel(model);
 }
 
+/** Trait defs for Eigenschaften — Variable ({{ params.* }}) + description. */
+const EMAIL_PARAM_TRAITS = [
+  {
+    type: "param-expression",
+    name: "data-param-expr",
+    label: "Variable",
+  },
+  {
+    type: "param-description",
+    name: "data-param-description",
+    label: "Angezeigte Informationen",
+  },
+] as const;
+
 /** Sync trait attributes before opening Eigenschaften. */
 function syncParamTraits(model: Component): void {
+  // Replace Grapes default id/title if a badge was ever typed as plain text
+  model.setTraits([...EMAIL_PARAM_TRAITS]);
   const key = paramKeyOf(model);
   if (!KEY_OK.test(key)) return;
   const expression = `{{ params.${key} }}`;
@@ -315,7 +333,7 @@ export function registerEmailParamComponent(editor: Editor): void {
       const el = document.createElement("textarea");
       el.rows = 6;
       el.className = "ed-trait-param-desc";
-      el.setAttribute("aria-label", "Bedeutung");
+      el.setAttribute("aria-label", "Angezeigte Informationen");
       wrap.appendChild(el);
       attachCopyButton(el, wrap);
       return wrap;
@@ -348,7 +366,7 @@ export function registerEmailParamComponent(editor: Editor): void {
       el.type = "text";
       el.readOnly = true;
       el.className = "ed-trait-param-expr";
-      el.setAttribute("aria-label", "Param-Key");
+      el.setAttribute("aria-label", "Variable");
       wrap.appendChild(el);
       attachCopyButton(el, wrap);
       return wrap;
@@ -389,18 +407,7 @@ export function registerEmailParamComponent(editor: Editor): void {
           "data-param-expr": "",
           "data-param-description": "",
         },
-        traits: [
-          {
-            type: "param-expression",
-            name: "data-param-expr",
-            label: "Param-Key",
-          },
-          {
-            type: "param-description",
-            name: "data-param-description",
-            label: "Bedeutung",
-          },
-        ],
+        traits: [...EMAIL_PARAM_TRAITS],
       },
       // Canvas shows a badge; Brevo/getHtml gets the merge tag only.
       toHTML() {
@@ -417,7 +424,9 @@ export function registerEmailParamComponent(editor: Editor): void {
     view: {
       events() {
         return {
+          mousedown: "onBadgeMouseDown",
           click: "onBadgeClick",
+          dblclick: "onBadgeDblClick",
           "click .email-param-badge__remove": "onRemoveClick",
         };
       },
@@ -426,9 +435,36 @@ export function registerEmailParamComponent(editor: Editor): void {
         ev.stopPropagation();
         this.model.remove();
       },
+      onBadgeMouseDown(ev: MouseEvent) {
+        const t = ev.target as HTMLElement | null;
+        if (t?.closest?.(".email-param-badge__remove")) return;
+        const host = (this.el as HTMLElement | undefined)?.closest?.(
+          '[data-email-type="email-text"], [data-email-type="email-heading"]',
+        );
+        // Keep drag/⌘A text selection; block Grapes component-select steal.
+        if (host?.getAttribute("contenteditable") === "true") {
+          ev.stopPropagation();
+        }
+      },
+      onBadgeDblClick(ev: Event) {
+        const t = ev.target as HTMLElement | null;
+        if (t?.closest?.(".email-param-badge__remove")) return;
+        ev.preventDefault();
+        ev.stopPropagation();
+        syncParamTraits(this.model);
+        editor.select(this.model);
+      },
       onBadgeClick(ev: Event) {
         const t = ev.target as HTMLElement | null;
         if (t?.closest?.(".email-param-badge__remove")) return;
+        const host = (this.el as HTMLElement | undefined)?.closest?.(
+          '[data-email-type="email-text"], [data-email-type="email-heading"]',
+        );
+        // Inside active RTE: let the browser keep text selection (incl. this pill).
+        // Traits open via double-click instead.
+        if (host?.getAttribute("contenteditable") === "true") {
+          return;
+        }
         ev.preventDefault();
         ev.stopPropagation();
         syncParamTraits(this.model);
@@ -457,8 +493,8 @@ export function registerEmailParamComponent(editor: Editor): void {
         el.replaceChildren();
         const label = doc.createElement("span");
         label.className = "email-param-badge__label";
-        // Canvas shows short label; toHTML() still emits {{ params.key }}
-        label.textContent = meaning;
+        // Visual editor shows merge tag; toHTML() emits the same {{ params.key }}
+        label.textContent = expression;
 
         const remove = doc.createElement("button");
         remove.type = "button";
@@ -496,15 +532,33 @@ export function registerEmailParamComponent(editor: Editor): void {
   wireParamBadgeKeys(editor);
 }
 
-/** Accept only inline param badges (+ text nodes / links) into a host. */
-export function isInlineParamDrop(source: Component): boolean {
-  const type = String(source.get("type") ?? "");
+/** Accept inline drops into text/heading/button hosts (components or drag defs). */
+export function isInlineParamDrop(source: unknown): boolean {
+  // Grapes may pass raw HTML strings from Canvas.startDrag({ content: "..." })
+  if (typeof source === "string") return source.trim().length > 0;
+  const type = dropSourceType(source);
   return (
     type === "email-param" ||
     type === "textnode" ||
     type === "text" ||
-    type === "link"
+    type === "link" ||
+    // Textbausteine / snippet drag (Canvas.startDrag definition)
+    type === "email-text" ||
+    type === "email-heading"
   );
+}
+
+/** Resolve Grapes component type from a live model or a plain drag definition. */
+export function dropSourceType(source: unknown): string {
+  if (!source || typeof source !== "object") return "";
+  const s = source as {
+    get?: (k: string) => unknown;
+    type?: unknown;
+  };
+  if (typeof s.get === "function") {
+    return String(s.get("type") ?? "");
+  }
+  return String(s.type ?? "");
 }
 
 export function buildEmailParamComponent(key: string, label: string) {

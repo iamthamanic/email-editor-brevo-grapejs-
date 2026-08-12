@@ -23,5 +23,11 @@ export async function createTemplateViaModal(
 
   const nameInput = page.getByPlaceholder("Template-Name eingeben");
   await nameInput.fill(name);
-  await page.getByPlaceholder("Betreff eingeben").fill("E2E Betreff");
+
+  // Betreff is a contenteditable (ComposeSubjectField), not a native input
+  const subject = page.getByTestId("compose-subject-edit");
+  if (await subject.count()) {
+    await subject.click();
+    await page.keyboard.type("E2E Betreff");
+  }
 }
