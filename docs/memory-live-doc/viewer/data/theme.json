@@ -4,12 +4,12 @@
   "source": "docs/UI_STYLEGUIDE.md",
   "locked": false,
   "tokens": {
-    "bg": "#f4f6f5",
+    "bg": "#fafafa",
     "bgElev": "#ffffff",
     "ink": "#0a0a0a",
-    "muted": "#5c6b66",
-    "line": "#d0d7d4",
-    "accent": "#1a5f4a",
+    "muted": "#275073",
+    "line": "#f0f0f0",
+    "accent": "#275073",
     "accent2": "#6bb89a",
     "danger": "#e07a6a",
     "radius": "8px",
@@ -17,8 +17,8 @@
     "fontBody": "IBM Plex Sans, Segoe UI, sans-serif",
     "fontMono": "IBM Plex Mono, ui-monospace, monospace",
     "tabRadius": "8px",
-    "bgGlow1": "#1a5f4a",
-    "bgGlow2": "#f4f6f5"
+    "bgGlow1": "#275073",
+    "bgGlow2": "#fafafa"
   },
   "fonts": {
     "google": "https://fonts.googleapis.com/css2?family=IBM+Plex+Sans:wght@400;500;600;700&family=IBM+Plex+Mono:wght@400;500&display=swap"
@@ -28,14 +28,14 @@
     "themeVariables": {
       "primaryColor": "#ffffff",
       "primaryTextColor": "#e8eaef",
-      "primaryBorderColor": "#1a5f4a",
-      "lineColor": "#5c6b66",
+      "primaryBorderColor": "#275073",
+      "lineColor": "#275073",
       "secondaryColor": "#ffffff",
-      "tertiaryColor": "#f4f6f5",
-      "background": "#f4f6f5",
+      "tertiaryColor": "#fafafa",
+      "background": "#fafafa",
       "mainBkg": "#ffffff",
-      "nodeBorder": "#1a5f4a",
-      "clusterBkg": "#f4f6f5",
+      "nodeBorder": "#275073",
+      "clusterBkg": "#fafafa",
       "titleColor": "#e8eaef",
       "edgeLabelBackground": "#ffffff"
     }

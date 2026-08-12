@@ -2,6 +2,204 @@
   "schema_version": 1,
   "changes": [
     {
+      "id": "2026-08-07-phase-3-corporate-components",
+      "date": "2026-08-07",
+      "type": "feat",
+      "status": "committed",
+      "title": {
+        "de": "Phase 3 — Corporate Components (Firma)",
+        "en": "Phase 3 — Corporate Components (Company)"
+      },
+      "summary": {
+        "de": "Fünf typisierte Firma-Blöcke mit locked Shell, Traits, Brand-Defaults und Nested-Lock nach Rebuild.",
+        "en": "Five typed company blocks with locked shell, traits, brand defaults, and nested lock after rebuild."
+      },
+      "user_impact": {
+        "de": [
+          "Kategorie Firma im Block Manager",
+          "Header/Footer/Legal/Kontakt/Social"
+        ],
+        "en": [
+          "Company category in block manager",
+          "Header/Footer/Legal/Contact/Social"
+        ]
+      },
+      "developer_impact": {
+        "de": [
+          "packages/email-components corporate.ts + brandDefaults",
+          "E2E phase-3"
+        ],
+        "en": [
+          "packages/email-components corporate.ts + brandDefaults",
+          "E2E phase-3"
+        ]
+      },
+      "operational_impact": {
+        "de": [
+          "Keine API-/DB-Änderung"
+        ],
+        "en": [
+          "No API/DB change"
+        ]
+      },
+      "git": {
+        "base": "c6d4572ccdce12c07bff09288b7861e5ea903371",
+        "head": "pending",
+        "branch": "main",
+        "pull_request": null
+      },
+      "packages": [
+        "packages/email-components",
+        "apps/editor"
+      ],
+      "affected_features": [
+        "corporate-components",
+        "email-components"
+      ],
+      "affected_components": [
+        "packages/email-components/src/corporate.ts",
+        "packages/email-components/src/brandDefaults.ts",
+        "packages/email-components/src/registry.ts",
+        "apps/editor/e2e/phase-3-corporate-components.spec.ts"
+      ],
+      "breaking_changes": [],
+      "migration_required": false,
+      "security_relevant": true,
+      "evidence": [
+        {
+          "kind": "compare",
+          "path": "c6d4572ccdce12c07bff09288b7861e5ea903371...pending",
+          "url": "https://github.com/iamthamanic/email-editor-brevo-grapejs-/compare/c6d4572ccdce12c07bff09288b7861e5ea903371...pending"
+        },
+        {
+          "kind": "commit",
+          "path": "pending",
+          "sha": "pending",
+          "url": "https://github.com/iamthamanic/email-editor-brevo-grapejs-/commit/pending"
+        },
+        {
+          "kind": "file",
+          "path": "packages/email-components/src/corporate.ts",
+          "url": "https://github.com/iamthamanic/email-editor-brevo-grapejs-/blob/pending/packages/email-components/src/corporate.ts"
+        },
+        {
+          "kind": "file",
+          "path": "packages/email-components/src/brandDefaults.ts",
+          "url": "https://github.com/iamthamanic/email-editor-brevo-grapejs-/blob/pending/packages/email-components/src/brandDefaults.ts"
+        },
+        {
+          "kind": "file",
+          "path": "packages/email-components/src/registry.ts",
+          "url": "https://github.com/iamthamanic/email-editor-brevo-grapejs-/blob/pending/packages/email-components/src/registry.ts"
+        },
+        {
+          "kind": "file",
+          "path": "apps/editor/e2e/phase-3-corporate-components.spec.ts",
+          "url": "https://github.com/iamthamanic/email-editor-brevo-grapejs-/blob/pending/apps/editor/e2e/phase-3-corporate-components.spec.ts"
+        }
+      ],
+      "review_status": "needs-review",
+      "confidence": 0.9,
+      "locked": false
+    },
+    {
+      "id": "2026-08-07-phase-4-variables",
+      "date": "2026-08-07",
+      "type": "feat",
+      "status": "committed",
+      "title": {
+        "de": "Phase 4 — Variables",
+        "en": "Phase 4 — Variables"
+      },
+      "summary": {
+        "de": "email-variables Package, API Katalog/Sample, Picker und Beispieldaten-Preview.",
+        "en": "email-variables package, API catalog/sample, picker and sample preview."
+      },
+      "user_impact": {
+        "de": [
+          "Variablen einfügen",
+          "Beispieldaten-Vorschau"
+        ],
+        "en": [
+          "Insert variables",
+          "Sample preview"
+        ]
+      },
+      "developer_impact": {
+        "de": [
+          "packages/email-variables",
+          "GET /api/variables",
+          "GET /api/preview/sample"
+        ],
+        "en": [
+          "packages/email-variables",
+          "GET /api/variables",
+          "GET /api/preview/sample"
+        ]
+      },
+      "operational_impact": {
+        "de": [
+          "Keine DB-Migration"
+        ],
+        "en": [
+          "No DB migration"
+        ]
+      },
+      "git": {
+        "base": "38799725b93d4e776f70594929ed9d26b32bc35f",
+        "head": "working-tree",
+        "branch": "main",
+        "pull_request": null
+      },
+      "packages": [
+        "packages/email-variables",
+        "apps/api",
+        "apps/editor"
+      ],
+      "affected_features": [
+        "variables"
+      ],
+      "affected_components": [
+        "packages/email-variables/",
+        "apps/api/src/variables/routes.ts",
+        "apps/editor/src/variables/"
+      ],
+      "breaking_changes": [],
+      "migration_required": false,
+      "security_relevant": true,
+      "evidence": [
+        {
+          "kind": "compare",
+          "path": "38799725b93d4e776f70594929ed9d26b32bc35f...working-tree",
+          "url": "https://github.com/iamthamanic/email-editor-brevo-grapejs-/compare/38799725b93d4e776f70594929ed9d26b32bc35f...working-tree"
+        },
+        {
+          "kind": "commit",
+          "path": "working-tree",
+          "sha": "working-tree",
+          "url": "https://github.com/iamthamanic/email-editor-brevo-grapejs-/commit/working-tree"
+        },
+        {
+          "kind": "file",
+          "path": "packages/email-variables/",
+          "url": "https://github.com/iamthamanic/email-editor-brevo-grapejs-/tree/working-tree/packages/email-variables"
+        },
+        {
+          "kind": "file",
+          "path": "apps/api/src/variables/routes.ts",
+          "url": "https://github.com/iamthamanic/email-editor-brevo-grapejs-/blob/working-tree/apps/api/src/variables/routes.ts"
+        },
+        {
+          "kind": "file",
+          "path": "apps/editor/src/variables/",
+          "url": "https://github.com/iamthamanic/email-editor-brevo-grapejs-/tree/working-tree/apps/editor/src/variables"
+        }
+      ],
+      "review_status": "needs-review",
+      "confidence": 0.88,
+      "locked": false
+    },
+    {
       "id": "2026-08-07-project-setup-bootstrap",
       "date": "2026-08-07",
       "type": "chore",
@@ -58,9 +256,25 @@
       "security_relevant": true,
       "evidence": [
         {
-          "type": "commit",
-          "ref": "b4687f9314b075feff26e050d1fadd6c151a1a38",
-          "label": "bootstrap commit"
+          "kind": "commit",
+          "path": "b4687f9314b075feff26e050d1fadd6c151a1a38",
+          "sha": "b4687f9314b075feff26e050d1fadd6c151a1a38",
+          "url": "https://github.com/iamthamanic/email-editor-brevo-grapejs-/commit/b4687f9314b075feff26e050d1fadd6c151a1a38"
+        },
+        {
+          "kind": "file",
+          "path": "docs/PRD.md",
+          "url": "https://github.com/iamthamanic/email-editor-brevo-grapejs-/blob/b4687f9314b075feff26e050d1fadd6c151a1a38/docs/PRD.md"
+        },
+        {
+          "kind": "file",
+          "path": "AGENTS.md",
+          "url": "https://github.com/iamthamanic/email-editor-brevo-grapejs-/blob/b4687f9314b075feff26e050d1fadd6c151a1a38/AGENTS.md"
+        },
+        {
+          "kind": "file",
+          "path": ".qa/project.yaml",
+          "url": "https://github.com/iamthamanic/email-editor-brevo-grapejs-/blob/b4687f9314b075feff26e050d1fadd6c151a1a38/.qa/project.yaml"
         }
       ],
       "screenshots": [],

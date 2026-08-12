@@ -70,28 +70,35 @@
         "en": "Corporate Components"
       },
       "summary": {
-        "de": "Header/Footer als Registry-Komponenten",
-        "en": "Header/Footer as registry components"
+        "de": "Firma-Blöcke Header/Footer/Legal/Kontakt/Social als locked GrapesJS-Typen",
+        "en": "Company blocks Header/Footer/Legal/Contact/Social as locked GrapesJS types"
       },
-      "status": "planned",
+      "status": "implemented",
       "packages": [
-        "apps/editor",
-        "apps/api"
+        "packages/email-components",
+        "apps/editor"
       ],
-      "paths": [],
+      "paths": [
+        "packages/email-components/src/corporate.ts",
+        "packages/email-components/src/brandDefaults.ts",
+        "packages/email-components/src/registry.ts"
+      ],
       "user_impact": {
         "de": [
-          "Noch nicht implementiert — geplant laut PRD"
+          "Block-Kategorie „Firma“ im Editor",
+          "Header/Footer/Legal/Kontakt/Social per Drag & Traits"
         ],
         "en": [
-          "Not implemented yet — planned per PRD"
+          "Company block category in the editor",
+          "Header/Footer/Legal/Contact/Social via drag & traits"
         ]
       },
       "related_changes": [
-        "2026-08-07-project-setup-bootstrap"
+        "2026-08-07-project-setup-bootstrap",
+        "2026-08-07-phase-3-corporate-components"
       ],
       "review_status": "needs-review",
-      "confidence": 0.55,
+      "confidence": 0.88,
       "locked": false
     },
     {
@@ -101,28 +108,32 @@
         "en": "Email Components"
       },
       "summary": {
-        "de": "Basis-Blöcke Text/Bild/Button/Layout",
-        "en": "Base blocks text/image/button/layout"
+        "de": "Inhalt-/Layout-Blöcke + F-02 URL/HTML-Härtung",
+        "en": "Content/layout blocks + F-02 URL/HTML hardening"
       },
-      "status": "planned",
+      "status": "implemented",
       "packages": [
-        "apps/editor",
-        "apps/api"
+        "packages/email-components",
+        "packages/editor-core",
+        "apps/editor"
       ],
-      "paths": [],
+      "paths": [
+        "packages/email-components/"
+      ],
       "user_impact": {
         "de": [
-          "Noch nicht implementiert — geplant laut PRD"
+          "Kontrollierte Email-Blöcke statt Stock-GrapesJS"
         ],
         "en": [
-          "Not implemented yet — planned per PRD"
+          "Controlled email blocks instead of stock GrapesJS"
         ]
       },
       "related_changes": [
-        "2026-08-07-project-setup-bootstrap"
+        "2026-08-07-project-setup-bootstrap",
+        "2026-08-07-phase-2-email-components"
       ],
       "review_status": "needs-review",
-      "confidence": 0.55,
+      "confidence": 0.9,
       "locked": false
     },
     {
@@ -132,28 +143,35 @@
         "en": "Foundation"
       },
       "summary": {
-        "de": "Template API + GrapesJS Persistenz",
-        "en": "Template API + GrapesJS persistence"
+        "de": "Template API + GrapesJS Persistenz + DevAuth Fail-closed",
+        "en": "Template API + GrapesJS persistence + fail-closed DevAuth"
       },
-      "status": "planned",
+      "status": "implemented",
       "packages": [
         "apps/editor",
-        "apps/api"
+        "apps/api",
+        "packages/editor-core",
+        "packages/email-schema"
       ],
-      "paths": [],
+      "paths": [
+        "apps/api/",
+        "apps/editor/",
+        "packages/editor-core/"
+      ],
       "user_impact": {
         "de": [
-          "Noch nicht implementiert — geplant laut PRD"
+          "Templates anlegen, bearbeiten, Autosave, Reload"
         ],
         "en": [
-          "Not implemented yet — planned per PRD"
+          "Create, edit, autosave, reload templates"
         ]
       },
       "related_changes": [
-        "2026-08-07-project-setup-bootstrap"
+        "2026-08-07-project-setup-bootstrap",
+        "2026-08-07-phase-1-foundation"
       ],
       "review_status": "needs-review",
-      "confidence": 0.55,
+      "confidence": 0.9,
       "locked": false
     },
     {
@@ -225,28 +243,36 @@
         "en": "Variables"
       },
       "summary": {
-        "de": "Brevo-Variablen Registry + Preview",
-        "en": "Brevo variable registry + preview"
+        "de": "params.* Registry + Picker + Sample-API/Preview",
+        "en": "params.* registry + picker + sample API/preview"
       },
-      "status": "planned",
+      "status": "implemented",
       "packages": [
-        "apps/editor",
-        "apps/api"
+        "packages/email-variables",
+        "apps/api",
+        "apps/editor"
       ],
-      "paths": [],
+      "paths": [
+        "packages/email-variables/",
+        "apps/api/src/variables/",
+        "apps/editor/src/variables/"
+      ],
       "user_impact": {
         "de": [
-          "Noch nicht implementiert — geplant laut PRD"
+          "Variable-Picker (Kunde/Auftrag/Rechnung)",
+          "Beispieldaten-Preview"
         ],
         "en": [
-          "Not implemented yet — planned per PRD"
+          "Variable picker (customer/order/invoice)",
+          "Sample data preview"
         ]
       },
       "related_changes": [
-        "2026-08-07-project-setup-bootstrap"
+        "2026-08-07-project-setup-bootstrap",
+        "2026-08-07-phase-4-variables"
       ],
       "review_status": "needs-review",
-      "confidence": 0.55,
+      "confidence": 0.88,
       "locked": false
     }
   ]

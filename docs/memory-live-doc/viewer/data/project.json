@@ -11,7 +11,7 @@
   },
   "packages": ["apps/editor", "apps/api", "packages/*"],
   "repository": {
-    "url": null,
+    "url": "https://github.com/iamthamanic/email-editor-brevo-grapejs-",
     "default_branch": "main"
   },
   "review_status": "needs-review",

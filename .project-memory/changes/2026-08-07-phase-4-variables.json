@@ -12,16 +12,34 @@
     "en": "email-variables package, API catalog/sample, picker and sample preview."
   },
   "user_impact": {
-    "de": ["Variablen einfügen", "Beispieldaten-Vorschau"],
-    "en": ["Insert variables", "Sample preview"]
+    "de": [
+      "Variablen einfügen",
+      "Beispieldaten-Vorschau"
+    ],
+    "en": [
+      "Insert variables",
+      "Sample preview"
+    ]
   },
   "developer_impact": {
-    "de": ["packages/email-variables", "GET /api/variables", "GET /api/preview/sample"],
-    "en": ["packages/email-variables", "GET /api/variables", "GET /api/preview/sample"]
+    "de": [
+      "packages/email-variables",
+      "GET /api/variables",
+      "GET /api/preview/sample"
+    ],
+    "en": [
+      "packages/email-variables",
+      "GET /api/variables",
+      "GET /api/preview/sample"
+    ]
   },
   "operational_impact": {
-    "de": ["Keine DB-Migration"],
-    "en": ["No DB migration"]
+    "de": [
+      "Keine DB-Migration"
+    ],
+    "en": [
+      "No DB migration"
+    ]
   },
   "git": {
     "base": "38799725b93d4e776f70594929ed9d26b32bc35f",
@@ -29,8 +47,14 @@
     "branch": "main",
     "pull_request": null
   },
-  "packages": ["packages/email-variables", "apps/api", "apps/editor"],
-  "affected_features": ["variables"],
+  "packages": [
+    "packages/email-variables",
+    "apps/api",
+    "apps/editor"
+  ],
+  "affected_features": [
+    "variables"
+  ],
   "affected_components": [
     "packages/email-variables/",
     "apps/api/src/variables/routes.ts",
@@ -41,9 +65,30 @@
   "security_relevant": true,
   "evidence": [
     {
-      "type": "path",
-      "ref": ".qa/evidence/phase-4-variables/",
-      "label": "Playwright screenshots"
+      "kind": "compare",
+      "path": "38799725b93d4e776f70594929ed9d26b32bc35f...working-tree",
+      "url": "https://github.com/iamthamanic/email-editor-brevo-grapejs-/compare/38799725b93d4e776f70594929ed9d26b32bc35f...working-tree"
+    },
+    {
+      "kind": "commit",
+      "path": "working-tree",
+      "sha": "working-tree",
+      "url": "https://github.com/iamthamanic/email-editor-brevo-grapejs-/commit/working-tree"
+    },
+    {
+      "kind": "file",
+      "path": "packages/email-variables/",
+      "url": "https://github.com/iamthamanic/email-editor-brevo-grapejs-/tree/working-tree/packages/email-variables"
+    },
+    {
+      "kind": "file",
+      "path": "apps/api/src/variables/routes.ts",
+      "url": "https://github.com/iamthamanic/email-editor-brevo-grapejs-/blob/working-tree/apps/api/src/variables/routes.ts"
+    },
+    {
+      "kind": "file",
+      "path": "apps/editor/src/variables/",
+      "url": "https://github.com/iamthamanic/email-editor-brevo-grapejs-/tree/working-tree/apps/editor/src/variables"
     }
   ],
   "review_status": "needs-review",
