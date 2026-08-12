@@ -1,7 +1,7 @@
 {
   "schema_version": 1,
-  "last_processed_commit": "20b2cb88eaf6aa9507665713ed0d3b071622ea19",
-  "processed_at": "2026-08-12T15:20:00Z",
+  "last_processed_commit": "9d7912c6c043d07a4e56a44266c65b28c6a965b9",
+  "processed_at": "2026-08-12T15:19:57Z",
   "mode": "incremental",
-  "notes": "Catch-up from c6d4572: Brevo sync/publish, legacy import, compose, textbausteine, Pages viewer"
+  "notes": "Catch-up apply complete; memory synced through living-docs commit"
 }

@@ -1,9 +1,9 @@
 {
   "schema_version": 1,
   "as_of": "2026-08-12",
-  "commit": "20b2cb88eaf6aa9507665713ed0d3b071622ea19",
+  "commit": "9d7912c6c043d07a4e56a44266c65b28c6a965b9",
   "product_status": {
-    "de": "Editor + API produktiv nutzbar lokal: Publish/Sync nach Brevo, Legacy-Import, Textbausteine, Compose, Assets und Variables. Living Docs Viewer auf GitHub Pages. Production-Deploy und vollständige ERP-Einbettung noch offen.",
+    "de": "Editor + API produktiv nutzbar lokal: Publish/Sync nach Brevo, Legacy-Import, Textbausteine, Compose, Assets und Variables. Living Docs Viewer auf GitHub Pages. Production-Deploy und vollst\u00e4ndige ERP-Einbettung noch offen.",
     "en": "Editor + API usable locally: publish/sync to Brevo, legacy import, text snippets, compose, assets, and variables. Living docs viewer on GitHub Pages. Production deploy and full ERP embedding still open."
   },
   "active_focus": [
@@ -32,7 +32,7 @@
   ],
   "incomplete": [
     {
-      "de": "Screenshots für Compose/Textbausteine noch missing",
+      "de": "Screenshots f\u00fcr Compose/Textbausteine noch missing",
       "en": "Screenshots for compose/text snippets still missing"
     },
     {
@@ -46,7 +46,7 @@
       "en": "Production hosting / deploy pipeline still planned"
     },
     {
-      "de": "Viele Memory-Einträge noch needs-review",
+      "de": "Viele Memory-Eintr\u00e4ge noch needs-review",
       "en": "Many memory entries still needs-review"
     }
   ],
@@ -54,42 +54,66 @@
   "milestones": [
     {
       "id": "project-setup",
-      "title": { "de": "Project Setup / Scaffold", "en": "Project Setup / Scaffold" },
+      "title": {
+        "de": "Project Setup / Scaffold",
+        "en": "Project Setup / Scaffold"
+      },
       "status": "done"
     },
     {
       "id": "phase-1-foundation",
-      "title": { "de": "Phase 1 — Foundation", "en": "Phase 1 — Foundation" },
+      "title": {
+        "de": "Phase 1 \u2014 Foundation",
+        "en": "Phase 1 \u2014 Foundation"
+      },
       "status": "done"
     },
     {
       "id": "phase-2-email-components",
-      "title": { "de": "Phase 2 — Email Components", "en": "Phase 2 — Email Components" },
+      "title": {
+        "de": "Phase 2 \u2014 Email Components",
+        "en": "Phase 2 \u2014 Email Components"
+      },
       "status": "done"
     },
     {
       "id": "phase-3-corporate-components",
-      "title": { "de": "Phase 3 — Corporate Components", "en": "Phase 3 — Corporate Components" },
+      "title": {
+        "de": "Phase 3 \u2014 Corporate Components",
+        "en": "Phase 3 \u2014 Corporate Components"
+      },
       "status": "done"
     },
     {
       "id": "phase-4-variables",
-      "title": { "de": "Phase 4 — Variables", "en": "Phase 4 — Variables" },
+      "title": {
+        "de": "Phase 4 \u2014 Variables",
+        "en": "Phase 4 \u2014 Variables"
+      },
       "status": "done"
     },
     {
       "id": "brevo-sync-publish",
-      "title": { "de": "Brevo Sync + Publish", "en": "Brevo Sync + Publish" },
+      "title": {
+        "de": "Brevo Sync + Publish",
+        "en": "Brevo Sync + Publish"
+      },
       "status": "done"
     },
     {
       "id": "compose-textbausteine",
-      "title": { "de": "Compose + Textbausteine", "en": "Compose + Text snippets" },
+      "title": {
+        "de": "Compose + Textbausteine",
+        "en": "Compose + Text snippets"
+      },
       "status": "done"
     },
     {
       "id": "erp-embed-deploy",
-      "title": { "de": "ERP Embed + Deploy", "en": "ERP embed + deploy" },
+      "title": {
+        "de": "ERP Embed + Deploy",
+        "en": "ERP embed + deploy"
+      },
       "status": "planned"
     }
   ],
