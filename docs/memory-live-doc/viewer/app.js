@@ -689,6 +689,10 @@
     const shots = (ch.screenshots || [])
       .map((s) => {
         const cap = bi(s.caption) || s.id || s.path;
+        if (s.status === "present" && s.path) {
+          const src = s.path.replace(/^docs\/memory-live-doc\//, "../");
+          return `<li class="shot-item"><a href="${escapeAttr(src)}" target="_blank" rel="noopener noreferrer"><img class="shot-thumb" src="${escapeAttr(src)}" alt="${escapeAttr(cap)}" loading="lazy" /></a><div class="shot-cap">${escapeHtml(cap)}</div></li>`;
+        }
         return `<li>${escapeHtml(cap)} - <em>${escapeHtml(s.status || "missing")}</em></li>`;
       })
       .join("");

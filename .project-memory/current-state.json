@@ -32,10 +32,6 @@
   ],
   "incomplete": [
     {
-      "de": "Screenshots f\u00fcr Compose/Textbausteine noch missing",
-      "en": "Screenshots for compose/text snippets still missing"
-    },
-    {
       "de": "Asset-Storage S3/R2 Provider noch TBD",
       "en": "Asset storage S3/R2 provider still TBD"
     }

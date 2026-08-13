@@ -135,16 +135,27 @@
   ],
   "screenshots": [
     {
+      "id": "shot-compose",
       "path": "docs/memory-live-doc/assets/2026-08-12-editor-publish-compose-textbausteine/compose.png",
-      "status": "missing",
+      "status": "present",
       "caption": {
         "de": "Compose-Ansicht",
         "en": "Compose view"
       }
     },
     {
-      "path": "docs/memory-live-doc/assets/2026-08-12-editor-publish-compose-textbausteine/textbausteine.png",
-      "status": "missing",
+      "id": "shot-tb-menu",
+      "path": "docs/memory-live-doc/assets/2026-08-12-editor-publish-compose-textbausteine/textbausteine-menu.png",
+      "status": "present",
+      "caption": {
+        "de": "Textbausteine-Menü im Editor",
+        "en": "Text snippets menu in editor"
+      }
+    },
+    {
+      "id": "shot-tb-modal",
+      "path": "docs/memory-live-doc/assets/2026-08-12-editor-publish-compose-textbausteine/textbausteine-modal.png",
+      "status": "present",
       "caption": {
         "de": "Textbausteine-Modal mit Param-Pills",
         "en": "Text snippet modal with param pills"

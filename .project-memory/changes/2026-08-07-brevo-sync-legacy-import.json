@@ -119,7 +119,17 @@
       "url": "https://github.com/iamthamanic/email-editor-brevo-grapejs-/tree/7a18512/packages/legacy-importer"
     }
   ],
-  "screenshots": [],
+  "screenshots": [
+    {
+      "id": "shot-template-list",
+      "path": "docs/memory-live-doc/assets/2026-08-07-brevo-sync-legacy-import/template-list.png",
+      "status": "present",
+      "caption": {
+        "de": "Template-Karten-Liste",
+        "en": "Template card list"
+      }
+    }
+  ],
   "confidence": 0.82,
   "review_status": "needs-review",
   "locked": false

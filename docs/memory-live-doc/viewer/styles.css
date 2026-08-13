@@ -627,6 +627,36 @@ h1 {
   text-underline-offset: 2px;
 }
 
+/* Screenshots in change detail — thumbnails open full image */
+ul:has(> .shot-item) {
+  list-style: none;
+  display: flex;
+  flex-wrap: wrap;
+  gap: 1rem;
+  padding-left: 0 !important;
+}
+
+.shot-item {
+  display: grid;
+  gap: 0.35rem;
+  justify-items: start;
+  max-width: min(420px, 100%);
+}
+
+.shot-thumb {
+  width: 100%;
+  max-width: 420px;
+  border-radius: var(--radius);
+  border: 1px solid var(--line);
+  background: var(--bg-elev, #fff);
+  box-shadow: 0 1px 4px rgba(23, 35, 48, 0.08);
+}
+
+.shot-cap {
+  font-size: 0.8rem;
+  color: var(--muted);
+}
+
 .muted {
   color: var(--muted);
 }
